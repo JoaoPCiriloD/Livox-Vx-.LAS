@@ -1,0 +1,33 @@
+FROM osrf/ros:noetic-desktop-full
+
+ENV DEBIAN_FRONTEND=noninteractive
+SHELL ["/bin/bash", "-lc"]
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    git \
+    libeigen3-dev \
+    libpcl-dev \
+    ros-noetic-pcl-ros \
+    ros-noetic-tf \
+    ros-noetic-tf2-ros \
+    ros-noetic-cv-bridge \
+    ros-noetic-rosbag \
+    python3-catkin-tools \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /root/catkin_ws/src
+
+RUN git clone https://github.com/Livox-SDK/livox_ros_driver.git && \
+    git clone https://github.com/hku-mars/FAST_LIO.git && \
+    cd FAST_LIO && git submodule update --init --recursive
+
+WORKDIR /root/catkin_ws
+RUN source /opt/ros/noetic/setup.bash && catkin_make
+
+RUN echo "source /opt/ros/noetic/setup.bash" >> /root/.bashrc && \
+    echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
+
+WORKDIR /workspace

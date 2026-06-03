@@ -1,0 +1,27 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# Large LiDAR/GNSS inputs and outputs
+*.lvx
+*.ubx
+*.bag
+*.pcd
+*.las
+*.laz
+*.ply
+
+# Generated outputs
+fastlio2_output/
+sessoes/
+linux_input/
+
+# Logs and temporary files
+*.log
+*.tmp
+.DS_Store
+
+# Local IDE/editor state
+.idea/
+.vscode/
