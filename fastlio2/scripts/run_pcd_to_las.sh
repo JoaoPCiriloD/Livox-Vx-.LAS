@@ -7,4 +7,8 @@ if [[ $# -lt 2 ]]; then
 fi
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-"${ROOT_DIR}/.venv/bin/python" "${ROOT_DIR}/pcd_to_las_redtech.py" "$1" -o "$2"
+PYTHON_BIN="${ROOT_DIR}/.venv/bin/python"
+if [[ ! -x "${PYTHON_BIN}" ]]; then
+  PYTHON_BIN="python3"
+fi
+"${PYTHON_BIN}" "${ROOT_DIR}/pcd_to_las_redtech.py" "$1" -o "$2"

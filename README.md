@@ -23,6 +23,30 @@ LVX -> ROS bag -> FAST-LIO2 -> PCD -> LAS
 - CloudCompare para visualizar `.las`.
 - Arquivos de entrada `.lvx`; arquivos `.ubx` são usados pelo pipeline Python de georreferenciamento quando disponíveis.
 
+## Execucao Rapida
+
+O executavel principal processa um arquivo `.lvx` e entrega `.pcd` e `.las`:
+
+```bash
+bin/redtech-fastlio2-lvx.sh /caminho/arquivo.lvx fastlio2_output/minha_sessao
+```
+
+Ele executa:
+
+1. cria/usa `.venv`;
+2. instala dependencias Python de `requirements.txt`;
+3. constroi a imagem Docker `redtech-fastlio2:noetic` se ela ainda nao existir;
+4. converte `.lvx` para `rosbag`;
+5. executa FAST-LIO2;
+6. converte o mapa `.pcd` para `.las`.
+
+Saidas esperadas:
+
+```text
+fastlio2_output/minha_sessao/*_fastlio2_map.pcd
+fastlio2_output/minha_sessao/*_fastlio2_map.las
+```
+
 ## Linux
 
 No Linux, o caminho recomendado é Docker, pois o FAST-LIO2 usa ROS Noetic.
@@ -30,8 +54,16 @@ No Linux, o caminho recomendado é Docker, pois o FAST-LIO2 usa ROS Noetic.
 ```bash
 cd /caminho/para/Livox-Vx-.LAS
 python3 -m venv .venv
-.venv/bin/pip install laspy numpy pyubx2 pyproj
+.venv/bin/pip install -r requirements.txt
 bash fastlio2/scripts/build_fastlio2_docker.sh
+```
+
+Comando recomendado para um arquivo `.lvx`:
+
+```bash
+bin/redtech-fastlio2-lvx.sh \
+  /home/joao/Downloads/voo_20260603_165720/lidar_2026-06-03T16-57-20Z.lvx \
+  fastlio2_output/voo_20260603_165720
 ```
 
 Para executar todos os voos esperados pelo script:
@@ -75,12 +107,12 @@ flatpak run org.cloudcompare.CloudCompare fastlio2_output/minha_sessao/*_fastlio
 
 ## Windows
 
-No Windows, use WSL2 com Docker Desktop. Não é recomendado compilar FAST-LIO2/ROS Noetic diretamente no Windows.
+No Windows, use WSL2 com Docker Desktop. Nao e recomendado compilar FAST-LIO2/ROS Noetic diretamente no Windows, porque o FAST-LIO2 depende de ROS Noetic, PCL e pacotes Linux.
 
 1. Instale WSL2.
 2. Instale uma distribuição Ubuntu no WSL.
 3. Instale Docker Desktop e habilite integração com WSL2.
-4. Clone ou copie este projeto para dentro do WSL, por exemplo:
+4. Abra o Ubuntu/WSL e clone o projeto:
 
 ```bash
 cd ~
@@ -88,25 +120,43 @@ git clone https://github.com/JoaoPCiriloD/Livox-Vx-.LAS.git
 cd Livox-Vx-.LAS
 ```
 
-5. Prepare o ambiente Python e Docker:
+5. Prepare o ambiente:
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install laspy numpy pyubx2 pyproj
+.venv/bin/pip install -r requirements.txt
 bash fastlio2/scripts/build_fastlio2_docker.sh
 ```
 
-6. Execute:
+6. Execute um arquivo `.lvx` dentro do WSL:
 
 ```bash
-bash fastlio2/scripts/run_fastlio2_all_sessions.sh
+bash bin/redtech-fastlio2-lvx.sh \
+  /mnt/c/Users/SEU_USUARIO/Downloads/voo/lidar.lvx \
+  fastlio2_output/meu_voo
 ```
 
-Os arquivos `.las` podem ser abertos no CloudCompare para Windows. Se os resultados estiverem no WSL, acesse pelo Explorer usando:
+Tambem existe um wrapper `.bat` para chamar o WSL a partir do Windows:
+
+```bat
+bin\redtech-fastlio2-lvx.bat "C:\Users\SEU_USUARIO\Downloads\voo\lidar.lvx"
+```
+
+Se quiser escolher a pasta de saida pelo `.bat`:
+
+```bat
+bin\redtech-fastlio2-lvx.bat ^
+  "C:\Users\SEU_USUARIO\Downloads\voo\lidar.lvx" ^
+  "C:\Users\SEU_USUARIO\Downloads\fastlio2_saida\meu_voo"
+```
+
+Os arquivos `.las` podem ser abertos no CloudCompare para Windows. Se os resultados estiverem dentro do WSL, acesse pelo Explorer usando:
 
 ```text
 \\wsl$
 ```
+
+Ou copie o `.las` para `C:\Users\SEU_USUARIO\Downloads` e abra pelo CloudCompare normalmente.
 
 ## macOS
 
@@ -125,19 +175,13 @@ cd Livox-Vx-.LAS
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install laspy numpy pyubx2 pyproj
+.venv/bin/pip install -r requirements.txt
 ```
 
-5. Construa a imagem:
+5. Execute o fluxo completo:
 
 ```bash
-bash fastlio2/scripts/build_fastlio2_docker.sh
-```
-
-6. Execute um arquivo `.lvx`:
-
-```bash
-bash fastlio2/scripts/run_fastlio2_docker.sh \
+bin/redtech-fastlio2-lvx.sh \
   /caminho/arquivo.lvx \
   fastlio2_output/minha_sessao
 ```

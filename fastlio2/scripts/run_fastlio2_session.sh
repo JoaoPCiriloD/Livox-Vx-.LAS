@@ -18,7 +18,7 @@ USAGE
 LVX=""
 OUT_DIR=""
 CONFIG="/workspace/fastlio2/config/avia_redtech.yaml"
-PLAY_RATE="0.5"
+PLAY_RATE="1.0"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -135,6 +135,18 @@ fi
 cp "${FOUND_BAG}" "${BAG}"
 echo "Rosbag: ${BAG}"
 rosbag info "${BAG}" > "${LOG_DIR}/rosbag_info.log" 2>&1 || true
+BAG_TO_PLAY="${BAG}"
+if grep -q "Jan 01 1970" "${LOG_DIR}/rosbag_info.log" 2>/dev/null || grep -q "hr" "${LOG_DIR}/rosbag_info.log" 2>/dev/null; then
+  NORMALIZED_BAG="${OUT_DIR}/${SESSION_NAME}_normalized.bag"
+  echo "==> Normalizando timestamps do rosbag"
+  python3 /workspace/fastlio2/scripts/normalize_livox_bag.py "${BAG}" "${NORMALIZED_BAG}" \
+    > "${LOG_DIR}/normalize_bag.log" 2>&1 || {
+      echo "Falha ao normalizar rosbag. Veja ${LOG_DIR}/normalize_bag.log" >&2
+      exit 1
+    }
+  rosbag info "${NORMALIZED_BAG}" > "${LOG_DIR}/rosbag_info_normalized.log" 2>&1 || true
+  BAG_TO_PLAY="${NORMALIZED_BAG}"
+fi
 
 echo "==> Iniciando roscore"
 roscore > "${LOG_DIR}/roscore.log" 2>&1 &
@@ -158,13 +170,14 @@ echo "==> Iniciando FAST-LIO2"
 export QT_QPA_PLATFORM=offscreen
 roslaunch fast_lio mapping_avia.launch \
   config_file:=redtech_avia.yaml \
+  point_filter_num:=1 \
   rviz:=false \
   > "${LOG_DIR}/fastlio2.log" 2>&1 &
 FASTLIO_PID=$!
 sleep 5
 
 echo "==> Tocando rosbag"
-rosbag play "${BAG}" --clock -r "${PLAY_RATE}" --quiet > "${LOG_DIR}/rosbag_play.log" 2>&1
+rosbag play "${BAG_TO_PLAY}" --clock -r "${PLAY_RATE}" --quiet > "${LOG_DIR}/rosbag_play.log" 2>&1
 sleep 20
 
 echo "==> Encerrando FAST-LIO2"
