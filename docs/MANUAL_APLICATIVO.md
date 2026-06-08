@@ -195,6 +195,8 @@ command -v cloudcompare || flatpak info org.cloudcompare.CloudCompare
 
 A interface PySide6 pode ser empacotada como executável, mas o fluxo FAST-LIO2 depende de Docker Desktop e WSL2. O código atual ainda chama o wrapper Linux `.sh`; a seleção automática do wrapper `.bat` precisa ser implementada antes da distribuição final para Windows.
 
+Consulte `docs/GUIA_WINDOWS.md` para o passo a passo completo, incluindo os caminhos `C:\Users\...` e `/mnt/c/Users/...`.
+
 ## 8. Mensagens comuns
 
 ### Nenhum arquivo `.lvx` encontrado

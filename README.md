@@ -152,56 +152,22 @@ flatpak run org.cloudcompare.CloudCompare fastlio2_output/minha_sessao/*_fastlio
 
 ## Windows
 
-No Windows, use WSL2 com Docker Desktop. Nao e recomendado compilar FAST-LIO2/ROS Noetic diretamente no Windows, porque o FAST-LIO2 depende de ROS Noetic, PCL e pacotes Linux.
-
-1. Instale WSL2.
-2. Instale uma distribuição Ubuntu no WSL.
-3. Instale Docker Desktop e habilite integração com WSL2.
-4. Abra o Ubuntu/WSL e clone o projeto:
-
-```bash
-cd ~
-# copie ou extraia o projeto
-cd ajr_lidar
-```
-
-5. Prepare o ambiente:
-
-```bash
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
-bash fastlio2/scripts/build_fastlio2_docker.sh
-```
-
-6. Execute um arquivo `.lvx` dentro do WSL:
-
-```bash
-bash bin/ajr-fastlio2-lvx.sh \
-  /mnt/c/Users/SEU_USUARIO/Downloads/voo/lidar.lvx \
-  fastlio2_output/meu_voo
-```
-
-Tambem existe um wrapper `.bat` para chamar o WSL a partir do Windows:
-
-```bat
-bin\ajr-fastlio2-lvx.bat "C:\Users\SEU_USUARIO\Downloads\voo\lidar.lvx"
-```
-
-Se quiser escolher a pasta de saida pelo `.bat`:
-
-```bat
-bin\ajr-fastlio2-lvx.bat ^
-  "C:\Users\SEU_USUARIO\Downloads\voo\lidar.lvx" ^
-  "C:\Users\SEU_USUARIO\Downloads\fastlio2_saida\meu_voo"
-```
-
-Os arquivos `.las` podem ser abertos no CloudCompare para Windows. Se os resultados estiverem dentro do WSL, acesse pelo Explorer usando:
+O FAST-LIO2 no Windows utiliza Docker Desktop com WSL2. O caminho recomendado do projeto é:
 
 ```text
-\\wsl$
+C:\Users\SEU_USUARIO\Downloads\ajr_lidar
 ```
 
-Ou copie o `.las` para `C:\Users\SEU_USUARIO\Downloads` e abra pelo CloudCompare normalmente.
+Execução rápida pelo PowerShell:
+
+```powershell
+cd "$env:USERPROFILE\Downloads\ajr_lidar"
+.\bin\ajr-fastlio2-lvx.bat `
+  "C:\Users\SEU_USUARIO\Downloads\voo\lidar.lvx" `
+  "C:\Users\SEU_USUARIO\Downloads\resultado_lidar\meu_voo"
+```
+
+O guia completo de instalação, conversão de caminhos Windows/WSL, testes e localização dos resultados está em `docs/GUIA_WINDOWS.md`.
 
 ## macOS
 
