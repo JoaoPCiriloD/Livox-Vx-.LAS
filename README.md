@@ -1,4 +1,6 @@
-# Livox-Vx-.LAS
+# AJR LiDAR
+
+Aplicativo e pipeline para processamento de dados Livox/LVX com FAST-LIO2, Docker e exportacao LAS para CloudCompare.
 
 Pipeline para processar arquivos Livox `.lvx`, reconstruir trajetória/nuvem com FAST-LIO2 e exportar o resultado para `.las` para abertura no CloudCompare.
 
@@ -20,22 +22,65 @@ LVX -> ROS bag -> FAST-LIO2 -> PCD -> LAS
 
 - Docker.
 - Python 3.10 ou superior para scripts auxiliares.
+- PySide6 para o aplicativo desktop.
 - CloudCompare para visualizar `.las`.
 - Arquivos de entrada `.lvx`; arquivos `.ubx` são usados pelo pipeline Python de georreferenciamento quando disponíveis.
+
+## Estrutura do Projeto
+
+```text
+.
+├── ajr_app/             # aplicativo desktop PySide6
+├── bin/                 # wrappers de execucao Windows/WSL e Linux
+├── docs/                # guias, notas e relatorios auxiliares
+├── fastlio2/            # Docker, configuracoes e scripts FAST-LIO2
+├── outputs/las/         # resultados LAS locais ignorados pelo Git
+├── scripts/
+│   ├── converters/      # conversores LVX/LAS/PCD/PLY
+│   ├── diagnostics/     # inspeção e analise de arquivos LVX
+│   ├── georef/          # georreferenciamento GNSS/LIO
+│   └── pipeline/        # pipeline principal e comparador
+├── ajr.bat
+├── ajr-compare.bat
+└── requirements.txt
+```
+
+## Aplicativo Desktop
+
+Abra o app pela raiz do projeto:
+
+```bash
+cd /home/joaop/Downloads/ajr_lidar
+source .venv/bin/activate
+.venv/bin/python ajr_app/manage.py
+```
+
+No app, selecione uma pasta de voo com `.lvx` valido e mantenha marcada a opcao `Usar FAST-LIO2 Docker e gerar *_map.las`. A saida principal esperada e:
+
+```text
+fastlio2_output/<sessao>/*_fastlio2_map.las
+```
+
+Documentacao do aplicativo:
+
+- `docs/MANUAL_APLICATIVO.md`: manual de uso e referencia das funcoes.
+- `docs/APLICATIVO_AJR.md`: instalacao, ambiente e diagnostico.
+
+O fluxo completo do aplicativo esta preparado para Linux. No Windows, a interface exige uma adaptacao para chamar automaticamente o wrapper `.bat`; consulte `docs/GUIA_WINDOWS.md`.
 
 ## Execucao Rapida
 
 O executavel principal processa um arquivo `.lvx` e entrega `.pcd` e `.las`:
 
 ```bash
-bin/redtech-fastlio2-lvx.sh /caminho/arquivo.lvx fastlio2_output/minha_sessao
+bin/ajr-fastlio2-lvx.sh /caminho/arquivo.lvx fastlio2_output/minha_sessao
 ```
 
 Ele executa:
 
 1. cria/usa `.venv`;
 2. instala dependencias Python de `requirements.txt`;
-3. constroi a imagem Docker `redtech-fastlio2:noetic` se ela ainda nao existir;
+3. constroi a imagem Docker `ajr-fastlio2:noetic` se ela ainda nao existir;
 4. converte `.lvx` para `rosbag`;
 5. executa FAST-LIO2;
 6. converte o mapa `.pcd` para `.las`.
@@ -52,7 +97,7 @@ fastlio2_output/minha_sessao/*_fastlio2_map.las
 No Linux, o caminho recomendado é Docker, pois o FAST-LIO2 usa ROS Noetic.
 
 ```bash
-cd /caminho/para/Livox-Vx-.LAS
+cd /home/joaop/Downloads/ajr_lidar
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 bash fastlio2/scripts/build_fastlio2_docker.sh
@@ -61,7 +106,7 @@ bash fastlio2/scripts/build_fastlio2_docker.sh
 Comando recomendado para um arquivo `.lvx`:
 
 ```bash
-bin/redtech-fastlio2-lvx.sh \
+bin/ajr-fastlio2-lvx.sh \
   /home/joao/Downloads/voo_20260603_165720/lidar_2026-06-03T16-57-20Z.lvx \
   fastlio2_output/voo_20260603_165720
 ```
@@ -116,8 +161,8 @@ No Windows, use WSL2 com Docker Desktop. Nao e recomendado compilar FAST-LIO2/RO
 
 ```bash
 cd ~
-git clone https://github.com/JoaoPCiriloD/Livox-Vx-.LAS.git
-cd Livox-Vx-.LAS
+# copie ou extraia o projeto
+cd ajr_lidar
 ```
 
 5. Prepare o ambiente:
@@ -131,7 +176,7 @@ bash fastlio2/scripts/build_fastlio2_docker.sh
 6. Execute um arquivo `.lvx` dentro do WSL:
 
 ```bash
-bash bin/redtech-fastlio2-lvx.sh \
+bash bin/ajr-fastlio2-lvx.sh \
   /mnt/c/Users/SEU_USUARIO/Downloads/voo/lidar.lvx \
   fastlio2_output/meu_voo
 ```
@@ -139,13 +184,13 @@ bash bin/redtech-fastlio2-lvx.sh \
 Tambem existe um wrapper `.bat` para chamar o WSL a partir do Windows:
 
 ```bat
-bin\redtech-fastlio2-lvx.bat "C:\Users\SEU_USUARIO\Downloads\voo\lidar.lvx"
+bin\ajr-fastlio2-lvx.bat "C:\Users\SEU_USUARIO\Downloads\voo\lidar.lvx"
 ```
 
 Se quiser escolher a pasta de saida pelo `.bat`:
 
 ```bat
-bin\redtech-fastlio2-lvx.bat ^
+bin\ajr-fastlio2-lvx.bat ^
   "C:\Users\SEU_USUARIO\Downloads\voo\lidar.lvx" ^
   "C:\Users\SEU_USUARIO\Downloads\fastlio2_saida\meu_voo"
 ```
@@ -167,8 +212,8 @@ No macOS, o caminho recomendado também é Docker.
 3. Clone o projeto:
 
 ```bash
-git clone https://github.com/JoaoPCiriloD/Livox-Vx-.LAS.git
-cd Livox-Vx-.LAS
+# copie ou extraia o projeto
+cd ajr_lidar
 ```
 
 4. Prepare dependências Python:
@@ -181,7 +226,7 @@ python3 -m venv .venv
 5. Execute o fluxo completo:
 
 ```bash
-bin/redtech-fastlio2-lvx.sh \
+bin/ajr-fastlio2-lvx.sh \
   /caminho/arquivo.lvx \
   fastlio2_output/minha_sessao
 ```
@@ -193,7 +238,7 @@ Observação: em Macs Apple Silicon, o Docker pode precisar rodar imagem `linux/
 A configuração para Livox Avia fica em:
 
 ```text
-fastlio2/config/avia_redtech.yaml
+fastlio2/config/avia_ajr.yaml
 ```
 
 Parâmetros importantes:
@@ -225,8 +270,14 @@ Esses arquivos são ignorados pelo `.gitignore`.
 - `fastlio2/scripts/build_fastlio2_docker.sh`: cria a imagem Docker com ROS Noetic, Livox driver e FAST-LIO2.
 - `fastlio2/scripts/run_fastlio2_docker.sh`: executa um `.lvx`.
 - `fastlio2/scripts/run_fastlio2_all_sessions.sh`: executa os quatro voos configurados.
-- `pcd_to_las_redtech.py`: converte PCD do FAST-LIO2 para LAS.
-- `redtech_pipeline.py`: pipeline Python original de conversão/georreferenciamento.
+- `scripts/converters/lvx_to_las_ajr.py`: converte LVX para LAS local.
+- `scripts/converters/pcd_to_las_ajr.py`: converte PCD do FAST-LIO2 para LAS.
+- `scripts/converters/las_to_ply_ajr.py`: converte LAS para PLY.
+- `scripts/georef/las_geo_ajr.py`: georreferencia LAS local usando UBX.
+- `scripts/georef/las_lio_geo_ajr.py`: georreferencia LAS reconstruido usando LVX e UBX.
+- `scripts/diagnostics/inspect_lvx_imu.py`: inspeciona amostras IMU do LVX.
+- `scripts/pipeline/ajr_pipeline.py`: pipeline Python de conversão/georreferenciamento.
+- `scripts/pipeline/ajr_compare.py`: compara sessoes processadas.
 
 ## Observações Técnicas
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-pcd_to_las_redtech.py
+pcd_to_las_ajr.py
 =====================
 
 Converte PCD gerado pelo FAST-LIO2 para LAS 1.4.

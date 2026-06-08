@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-las_geo_redtech.py v1.2
+las_geo_ajr.py v1.2
 =======================
 
 Aplica trajetoria GNSS (de arquivo .ubx) a uma nuvem .las local
@@ -30,14 +30,14 @@ LIMITACOES IMPORTANTES:
 Saida em coordenadas UTM (zona configuravel).
 
 Uso:
-    python las_geo_redtech.py input_local.las gnss.ubx [--output out.las]
+    python las_geo_ajr.py input_local.las gnss.ubx [--output out.las]
                               [--utm-zone N] [--hemisphere south|north]
 
 Exemplo:
-    python las_geo_redtech.py 2026-05-26_16-18-16_local.las gnss.ubx \\
+    python las_geo_ajr.py 2026-05-26_16-18-16_local.las gnss.ubx \\
                               --utm-zone 22 --hemisphere south
 
-RedTech Security
+AJR Security
 """
 
 import sys
@@ -162,7 +162,7 @@ def georeference_las(las_path, traj, utm_zone, hemisphere, output_path, verbose=
     las = laspy.read(las_path)
 
     # Point Format 3 e CONTRATO DE ENTRADA deste pipeline.
-    # O conversor RedTech sempre gera Format 3 (gps_time + RGB).
+    # O conversor AJR sempre gera Format 3 (gps_time + RGB).
     # Nao herdamos o formato do input de propósito: formatos do Livox
     # Viewer (ex: Format 2) podem nao preservar gps_time, e formatos
     # LAS 1.4 (6/7/8) mudam a estrutura de gps_time_type e RGB.
@@ -170,7 +170,7 @@ def georeference_las(las_path, traj, utm_zone, hemisphere, output_path, verbose=
         raise ValueError(
             f"LAS input e Point Format {las.header.point_format.id}, "
             f"mas este pipeline exige Point Format 3 gerado pelo conversor "
-            f"RedTech (lvx_to_las_redtech). Formatos do Livox Viewer nao "
+            f"AJR (lvx_to_las_ajr). Formatos do Livox Viewer nao "
             f"servem porque podem nao preservar gps_time."
         )
 
@@ -329,7 +329,7 @@ def main():
         epilog="""
 Exemplos:
   # Padrao: UTM zona 22 sul (Florianopolis/SP)
-  python las_geo_redtech.py local.las gnss.ubx
+  python las_geo_ajr.py local.las gnss.ubx
 
   # Outras zonas:
   # Acre: --utm-zone 19 --hemisphere south
@@ -379,7 +379,7 @@ LIMITACOES:
     verbose = not args.quiet
 
     print("=" * 60)
-    print("las_geo_redtech v1.2 — RedTech Security")
+    print("las_geo_ajr v1.2 — AJR Security")
     print("=" * 60)
     print(f"LAS in:  {las_path}")
     print(f"UBX in:  {ubx_path}")

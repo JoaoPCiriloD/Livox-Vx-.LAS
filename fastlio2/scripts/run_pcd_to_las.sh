@@ -11,4 +11,4 @@ PYTHON_BIN="${ROOT_DIR}/.venv/bin/python"
 if [[ ! -x "${PYTHON_BIN}" ]]; then
   PYTHON_BIN="python3"
 fi
-"${PYTHON_BIN}" "${ROOT_DIR}/pcd_to_las_redtech.py" "$1" -o "$2"
+"${PYTHON_BIN}" "${ROOT_DIR}/scripts/converters/pcd_to_las_ajr.py" "$1" -o "$2"

@@ -1,4 +1,4 @@
-# Comparacao de Sessoes RedTech
+# Comparacao de Sessoes AJR
 
 **Gerado em:** 2026-06-02 17:45:48
 **Sessoes comparadas:** 4
@@ -80,4 +80,4 @@ Distancia (metros) entre centros das nuvens georreferenciadas.
 
 ---
 
-*Gerado por redtech_compare.py v1.0*
+*Gerado por ajr_compare.py v1.0*

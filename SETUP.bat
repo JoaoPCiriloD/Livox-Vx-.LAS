@@ -1,13 +1,13 @@
 @echo off
 REM ============================================================
-REM SETUP.bat - Configuracao inicial RedTech LiDAR (Windows)
+REM SETUP.bat - Configuracao inicial AJR LiDAR (Windows)
 REM ============================================================
 REM Roda uma vez para preparar o ambiente.
 REM Instala bibliotecas Python e cria estrutura de pastas.
 REM ============================================================
 
 echo ============================================================
-echo   REDTECH LIDAR - SETUP WINDOWS
+echo   AJR LIDAR - SETUP WINDOWS
 echo ============================================================
 echo.
 
@@ -58,12 +58,24 @@ echo.
 
 REM --- 4. Criar estrutura de pastas ---
 echo [4/4] Criando estrutura de pastas...
-set REDTECH_DIR=%USERPROFILE%\Downloads\LIDAR_tests
-if not exist "%REDTECH_DIR%\sessoes" (
-    mkdir "%REDTECH_DIR%\sessoes"
-    echo   Criada: %REDTECH_DIR%\sessoes
-) else (
-    echo   Ja existe: %REDTECH_DIR%\sessoes
+set AJR_DIR=%~dp0
+for %%D in (
+    "sessoes"
+    "outputs"
+    "outputs\las"
+    "scripts"
+    "scripts\pipeline"
+    "scripts\converters"
+    "scripts\georef"
+    "scripts\diagnostics"
+    "docs"
+) do (
+    if not exist "%AJR_DIR%%%~D" (
+        mkdir "%AJR_DIR%%%~D"
+        echo   Criada: %AJR_DIR%%%~D
+    ) else (
+        echo   Ja existe: %AJR_DIR%%%~D
+    )
 )
 echo.
 
@@ -72,17 +84,21 @@ echo   SETUP COMPLETO
 echo ============================================================
 echo.
 echo Proximos passos:
-echo   1. Copie os 5 scripts .py para:
-echo      %REDTECH_DIR%
+echo   1. Mantenha os scripts nas pastas:
+echo      scripts\pipeline
+echo      scripts\converters
+echo      scripts\georef
+echo      scripts\diagnostics
 echo.
-echo   2. Copie os arquivos .bat (redtech.bat, redtech-compare.bat) para:
-echo      %REDTECH_DIR%
+echo   2. Mantenha os arquivos .bat na raiz do projeto:
+echo      ajr.bat
+echo      ajr-compare.bat
 echo.
 echo   3. Instale o CloudCompare:
 echo      https://www.danielgm.net/cc/release/
 echo.
 echo   4. Teste rodando:
-echo      redtech.bat --help
+echo      ajr.bat --help
 echo.
 echo Para nao precisar digitar o caminho completo, veja o
 echo arquivo ADICIONAR_AO_PATH.txt

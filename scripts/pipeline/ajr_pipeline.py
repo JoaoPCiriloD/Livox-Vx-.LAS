@@ -1,30 +1,30 @@
 #!/usr/bin/env python3
 """
-redtech_pipeline.py v2.0
+ajr_pipeline.py v2.0
 ========================
 
-Pipeline unificado RedTech: roda toda a validação + conversão + georef
+Pipeline unificado AJR: roda toda a validação + conversão + georef
 em um único comando, processando pastas de sessão.
 
 Uso:
     # Processa UMA pasta
-    python3 redtech_pipeline.py "~/Downloads/Teste 1/voo_20260527_142555"
+    python3 ajr_pipeline.py "~/Downloads/Teste 1/voo_20260527_142555"
 
     # Processa TODAS as pastas filhas (batch)
-    python3 redtech_pipeline.py "~/Downloads/Teste 1" --batch
+    python3 ajr_pipeline.py "~/Downloads/Teste 1" --batch
 
 Cada pasta de sessao deve conter:
     - 1 arquivo .lvx
     - 1 arquivo .ubx
     - 1 arquivo .log (str2str)
 
-Output organizado em ~/RedTech/sessoes/<nome_pasta>/:
+Output organizado em ~/AJR/sessoes/<nome_pasta>/:
     input/
     output/
     relatorio.md
     metrics.json
 
-RedTech Security
+AJR Security
 """
 
 import sys
@@ -113,6 +113,23 @@ def find_session_files(session_folder):
 # CONFIG
 # ============================================================
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_SCRIPTS_DIR = PROJECT_ROOT / "scripts"
+
+
+def find_script(scripts_dir, *relative_paths):
+    base = Path(scripts_dir).expanduser()
+    for relative_path in relative_paths:
+        candidate = base / relative_path
+        if candidate.exists():
+            return candidate
+    for relative_path in relative_paths:
+        candidate = PROJECT_ROOT / relative_path
+        if candidate.exists():
+            return candidate
+    return base / relative_paths[0]
+
+
 class Config:
     def __init__(self, args, session_folder):
         self.session_folder = Path(session_folder)
@@ -132,21 +149,25 @@ class Config:
         self.report_path = self.work_dir / "relatorio.md"
         self.metrics_path = self.work_dir / "metrics.json"
 
-        # Conversor: ordem de preferencia robusta.
-        # 1) nome canonico (lvx_to_las_redtech.py = sempre a versao boa/chunked)
-        # 2) v3 explicito (chunked)
-        # 3) v2 (legado — tem bug de dual return; ultimo recurso)
-        canonical = self.scripts_dir / "lvx_to_las_redtech.py"
-        v3 = self.scripts_dir / "lvx_to_las_redtech_v3.py"
-        v2 = self.scripts_dir / "lvx_to_las_redtech_v2.py"
-        if canonical.exists():
-            self.convert_script = canonical
-        elif v3.exists():
-            self.convert_script = v3
-        else:
-            self.convert_script = v2
-        self.georef_script = self.scripts_dir / "las_geo_redtech.py"
-        self.lio_georef_script = self.scripts_dir / "las_lio_geo_redtech.py"
+        self.convert_script = find_script(
+            self.scripts_dir,
+            "converters/lvx_to_las_ajr.py",
+            "lvx_to_las_ajr.py",
+            "converters/lvx_to_las_ajr_v3.py",
+            "lvx_to_las_ajr_v3.py",
+            "converters/lvx_to_las_ajr_v2.py",
+            "lvx_to_las_ajr_v2.py",
+        )
+        self.georef_script = find_script(
+            self.scripts_dir,
+            "georef/las_geo_ajr.py",
+            "las_geo_ajr.py",
+        )
+        self.lio_georef_script = find_script(
+            self.scripts_dir,
+            "georef/las_lio_geo_ajr.py",
+            "las_lio_geo_ajr.py",
+        )
         self.geo_las_path = None
         self.lio_geo_las_path = None
 
@@ -703,7 +724,7 @@ def step_7_run_pipeline(cfg, results, files):
     if geo_las.exists():
         print(f"  [INFO] {geo_las.name} ja existe, pulando")
     else:
-        print(f"\n  Rodando las_geo_redtech.py...")
+        print(f"\n  Rodando las_geo_ajr.py...")
         t0 = time.time()
         cmd = [sys.executable, str(cfg.georef_script),
                str(local_las), str(ubx_input), '-o', str(geo_las),
@@ -766,7 +787,7 @@ def step_7_run_pipeline(cfg, results, files):
         if lio_geo_las.exists():
             print(f"  [INFO] {lio_geo_las.name} ja existe, pulando LIO")
         else:
-            print(f"\n  Rodando las_lio_geo_redtech.py...")
+            print(f"\n  Rodando las_lio_geo_ajr.py...")
             t0 = time.time()
             cmd = [sys.executable, str(cfg.lio_georef_script),
                    str(local_las), str(ubx_input), str(lvx_input),
@@ -977,7 +998,7 @@ def write_report(cfg, results):
 
     lines.append("---")
     lines.append("")
-    lines.append("*Relatorio gerado por redtech_pipeline.py v2.0*")
+    lines.append("*Relatorio gerado por ajr_pipeline.py v2.0*")
 
     cfg.report_path.write_text('\n'.join(lines))
 
@@ -1084,15 +1105,15 @@ def find_session_folders(parent):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Pipeline RedTech: validacao + conversao + georef',
+        description='Pipeline AJR: validacao + conversao + georef',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Exemplos:
   # UMA pasta
-  python3 redtech_pipeline.py "~/Downloads/Teste 1/voo_20260527_142555"
+  python3 ajr_pipeline.py "~/Downloads/Teste 1/voo_20260527_142555"
 
   # TODAS as pastas filhas (batch)
-  python3 redtech_pipeline.py "~/Downloads/Teste 1" --batch
+  python3 ajr_pipeline.py "~/Downloads/Teste 1" --batch
 
   # Outras opcoes:
   --utm-zone 19         (Acre)
@@ -1106,9 +1127,9 @@ Exemplos:
                         help='Pasta da sessao OU pasta-mae (use --batch)')
     parser.add_argument('--batch', action='store_true',
                         help='Processar todas subpastas filhas')
-    parser.add_argument('--output', type=str, default='~/RedTech/sessoes',
+    parser.add_argument('--output', type=str, default='~/AJR/sessoes',
                         help='Pasta raiz de sessoes processadas')
-    parser.add_argument('--scripts', type=str, default='~/Downloads',
+    parser.add_argument('--scripts', type=str, default=str(DEFAULT_SCRIPTS_DIR),
                         help='Pasta com os scripts auxiliares')
     parser.add_argument('--utm-zone', type=int, default=22)
     parser.add_argument('--hemisphere', type=str, default='south',
@@ -1155,7 +1176,7 @@ Exemplos:
                   f"em {res.duration_seconds:.1f}s")
         print()
         print(f"  Relatorios em: {Path(args.output).expanduser()}")
-        print(f"  Para comparar: python3 redtech_compare.py --all")
+        print(f"  Para comparar: python3 ajr_compare.py --all")
     else:
         process_session(folder, args)
 

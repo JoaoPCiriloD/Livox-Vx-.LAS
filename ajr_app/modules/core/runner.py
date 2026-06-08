@@ -1,0 +1,4 @@
+import subprocess 
+
+def run_command(command):
+    return subprocess.run(command, text=True, capture_output=True)

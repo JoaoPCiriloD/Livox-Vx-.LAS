@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
 """
-redtech_compare.py v1.0
+ajr_compare.py v1.0
 =======================
 
-Compara metricas de multiplas sessoes processadas pelo redtech_pipeline.py.
+Compara metricas de multiplas sessoes processadas pelo ajr_pipeline.py.
 
 Le os arquivos metrics.json gerados pelo pipeline e produz tabela comparativa.
 
 Uso:
     # Comparar TODAS as sessoes processadas
-    python3 redtech_compare.py --all
+    python3 ajr_compare.py --all
 
     # Comparar sessoes especificas
-    python3 redtech_compare.py voo_20260527_142555 voo_20260527_142428
+    python3 ajr_compare.py voo_20260527_142555 voo_20260527_142428
 
     # Salvar resultado em arquivo
-    python3 redtech_compare.py --all --output comparacao.md
+    python3 ajr_compare.py --all --output comparacao.md
 
     # Pasta de sessoes diferente
-    python3 redtech_compare.py --all --sessoes ~/MyRedTech/sessoes
+    python3 ajr_compare.py --all --sessoes ~/MyAJR/sessoes
 
-RedTech Security
+AJR Security
 """
 
 import sys
@@ -102,7 +102,7 @@ def compare_sessions(session_dirs):
         return "# Comparacao\n\nNenhuma sessao encontrada com metrics.json."
 
     out = []
-    out.append("# Comparacao de Sessoes RedTech")
+    out.append("# Comparacao de Sessoes AJR")
     out.append("")
     out.append(f"**Gerado em:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     out.append(f"**Sessoes comparadas:** {len(sessions_data)}")
@@ -363,32 +363,32 @@ def compare_sessions(session_dirs):
     # ============ Footer ============
     out.append("---")
     out.append("")
-    out.append("*Gerado por redtech_compare.py v1.0*")
+    out.append("*Gerado por ajr_compare.py v1.0*")
 
     return "\n".join(out)
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Comparar metricas de sessoes RedTech processadas',
+        description='Comparar metricas de sessoes AJR processadas',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Exemplos:
   # Todas as sessoes
-  python3 redtech_compare.py --all
+  python3 ajr_compare.py --all
 
   # Sessoes especificas
-  python3 redtech_compare.py voo_20260527_142555 voo_20260527_142428
+  python3 ajr_compare.py voo_20260527_142555 voo_20260527_142428
 
   # Salvar em arquivo
-  python3 redtech_compare.py --all --output ~/comparacao.md
+  python3 ajr_compare.py --all --output ~/comparacao.md
 """
     )
     parser.add_argument('sessions', nargs='*',
                         help='Nomes de sessoes (opcional, use --all para todas)')
     parser.add_argument('--all', action='store_true',
                         help='Comparar todas sessoes disponiveis')
-    parser.add_argument('--sessoes', type=str, default='~/RedTech/sessoes',
+    parser.add_argument('--sessoes', type=str, default='~/AJR/sessoes',
                         help='Pasta raiz onde estao as sessoes processadas')
     parser.add_argument('--output', type=str, default=None,
                         help='Salvar saida em arquivo (default: stdout)')

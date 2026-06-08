@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-las_lio_geo_redtech.py v0.1
+las_lio_geo_ajr.py v0.1
 ===========================
 
 Georreferencia um LAS local considerando odometria inercial extraida do LVX.
@@ -36,7 +36,10 @@ except ImportError as e:
     print("Instalar com: pip install laspy numpy pyproj pyubx2")
     sys.exit(1)
 
-from las_geo_redtech import extract_trajectory, gps_adjusted_to_unix
+try:
+    from .las_geo_ajr import extract_trajectory, gps_adjusted_to_unix
+except ImportError:
+    from las_geo_ajr import extract_trajectory, gps_adjusted_to_unix
 
 
 PACKAGE_HEADER_SIZE = 19

@@ -4,13 +4,13 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Uso:
-  bin/redtech-fastlio2-lvx.sh ARQUIVO.lvx [OUT_DIR]
+  bin/ajr-fastlio2-lvx.sh ARQUIVO.lvx [OUT_DIR]
 
 Executa o fluxo completo:
   LVX -> ROS bag -> FAST-LIO2 -> PCD -> LAS
 
 Exemplo:
-  bin/redtech-fastlio2-lvx.sh /home/joao/Downloads/voo/lidar.lvx fastlio2_output/voo
+  bin/ajr-fastlio2-lvx.sh /home/joao/Downloads/voo/lidar.lvx fastlio2_output/voo
 USAGE
 }
 
@@ -37,8 +37,8 @@ fi
 echo "==> Instalando/validando dependencias Python"
 "${ROOT_DIR}/.venv/bin/python" -m pip install -r "${ROOT_DIR}/requirements.txt"
 
-if ! docker image inspect redtech-fastlio2:noetic >/dev/null 2>&1; then
-  echo "==> Imagem Docker redtech-fastlio2:noetic nao encontrada; construindo"
+if ! docker image inspect ajr-fastlio2:noetic >/dev/null 2>&1; then
+  echo "==> Imagem Docker ajr-fastlio2:noetic nao encontrada; construindo"
   bash "${ROOT_DIR}/fastlio2/scripts/build_fastlio2_docker.sh"
 fi
 

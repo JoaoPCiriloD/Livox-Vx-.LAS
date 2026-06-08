@@ -11,13 +11,13 @@ Executa:
   rosbag -> FAST-LIO2
   FAST-LIO2 -> PCD registrado
 
-Este script deve rodar dentro do container redtech-fastlio2:noetic.
+Este script deve rodar dentro do container ajr-fastlio2:noetic.
 USAGE
 }
 
 LVX=""
 OUT_DIR=""
-CONFIG="/workspace/fastlio2/config/avia_redtech.yaml"
+CONFIG="/workspace/fastlio2/config/avia_ajr.yaml"
 PLAY_RATE="1.0"
 
 while [[ $# -gt 0 ]]; do
@@ -55,7 +55,7 @@ rm -rf "${PCD_DIR}"
 mkdir -p "${PCD_DIR}"
 
 echo "==> Copiando config FAST-LIO2"
-cp "${CONFIG}" /root/catkin_ws/src/FAST_LIO/config/redtech_avia.yaml
+cp "${CONFIG}" /root/catkin_ws/src/FAST_LIO/config/ajr_avia.yaml
 cp "${CONFIG}" /root/catkin_ws/src/FAST_LIO/config/avia.yaml
 
 echo "==> Convertendo LVX para rosbag"
@@ -169,7 +169,7 @@ trap cleanup EXIT
 echo "==> Iniciando FAST-LIO2"
 export QT_QPA_PLATFORM=offscreen
 roslaunch fast_lio mapping_avia.launch \
-  config_file:=redtech_avia.yaml \
+  config_file:=ajr_avia.yaml \
   point_filter_num:=1 \
   rviz:=false \
   > "${LOG_DIR}/fastlio2.log" 2>&1 &

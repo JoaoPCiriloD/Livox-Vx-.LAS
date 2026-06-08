@@ -1,12 +1,12 @@
 ============================================================
-COMO RODAR "redtech" DE QUALQUER PASTA (opcional)
+COMO RODAR "ajr" DE QUALQUER PASTA (opcional)
 ============================================================
 
-Por padrao, voce precisa estar na pasta LIDAR_tests ou digitar
-o caminho completo do redtech.bat.
+Por padrao, voce precisa estar na pasta ajr_lidar ou digitar
+o caminho completo do ajr.bat.
 
-Para rodar "redtech" de QUALQUER lugar (como no Mac), adicione a
-pasta LIDAR_tests ao PATH do Windows.
+Para rodar "ajr" de QUALQUER lugar (como no Mac), adicione a
+pasta ajr_lidar ao PATH do Windows.
 
 ------------------------------------------------------------
 OPCAO 1 — Interface grafica (mais facil)
@@ -17,14 +17,14 @@ OPCAO 1 — Interface grafica (mais facil)
 3. Botao "Variaveis de Ambiente..."
 4. Em "Variaveis de usuario", selecione "Path", clique "Editar"
 5. Clique "Novo" e cole:
-   C:\Users\SEU_USUARIO\Downloads\LIDAR_tests
+   C:\Users\SEU_USUARIO\Downloads\ajr_lidar
    (troque SEU_USUARIO pelo seu nome de usuario do Windows)
 6. OK em tudo
 7. FECHE e REABRA o terminal (PowerShell ou CMD)
 
 Agora voce pode rodar de qualquer pasta:
-   redtech "C:\Users\Joao\Downloads\Teste 1" --batch
-   redtech-compare --all
+   ajr "C:\Users\Joao\Downloads\Teste 1" --batch
+   ajr-compare --all
 
 
 ------------------------------------------------------------
@@ -33,7 +33,7 @@ OPCAO 2 — PowerShell (comando unico)
 
 Abra o PowerShell e cole (troque o caminho se necessario):
 
-   $p = "$env:USERPROFILE\Downloads\LIDAR_tests"
+   $p = "$env:USERPROFILE\Downloads\ajr_lidar"
    $old = [Environment]::GetEnvironmentVariable("Path", "User")
    if ($old -notlike "*$p*") {
        [Environment]::SetEnvironmentVariable("Path", "$old;$p", "User")
@@ -53,9 +53,9 @@ Se nao quiser mexer no PATH, sempre rode assim:
 
 1. Abra o terminal
 2. Va para a pasta:
-   cd %USERPROFILE%\Downloads\LIDAR_tests      (CMD)
-   cd $env:USERPROFILE\Downloads\LIDAR_tests   (PowerShell)
+   cd %USERPROFILE%\Downloads\ajr_lidar      (CMD)
+   cd $env:USERPROFILE\Downloads\ajr_lidar   (PowerShell)
 3. Rode:
-   redtech.bat "C:\Users\Joao\Downloads\Teste 1" --batch
+   ajr.bat "C:\Users\Joao\Downloads\Teste 1" --batch
 
 ============================================================

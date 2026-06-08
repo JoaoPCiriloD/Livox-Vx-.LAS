@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-lvx_to_las_redtech.py v3.1
+lvx_to_las_ajr.py v3.1
 ==========================
 
 Converte arquivos .lvx (Livox Avia) para .las Point Format 3 preservando
@@ -32,10 +32,10 @@ Diferenca em relacao ao File Converter do Livox Viewer 0.11.0:
                       fusao posterior com trajetoria GNSS (.ubx)
 
 Uso:
-    python lvx_to_las_redtech.py input.lvx [--output output.las] [--max-frames N]
-    python lvx_to_las_redtech.py input.lvx --chunk-frames 100   (ajustar bloco)
+    python lvx_to_las_ajr.py input.lvx [--output output.las] [--max-frames N]
+    python lvx_to_las_ajr.py input.lvx --chunk-frames 100   (ajustar bloco)
 
-RedTech Security
+AJR Security
 """
 
 import sys
@@ -584,10 +584,10 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Exemplos:
-  python lvx_to_las_redtech.py arquivo.lvx
-  python lvx_to_las_redtech.py arquivo.lvx -o saida.las
-  python lvx_to_las_redtech.py arquivo.lvx --max-frames 10
-  python lvx_to_las_redtech.py arquivo.lvx --chunk-frames 200
+  python lvx_to_las_ajr.py arquivo.lvx
+  python lvx_to_las_ajr.py arquivo.lvx -o saida.las
+  python lvx_to_las_ajr.py arquivo.lvx --max-frames 10
+  python lvx_to_las_ajr.py arquivo.lvx --chunk-frames 200
 
 v3.0: escrita chunked (uso de RAM constante, suporta voos longos)
 """
@@ -616,7 +616,7 @@ v3.0: escrita chunked (uso de RAM constante, suporta voos longos)
     verbose = not args.quiet
 
     print("=" * 60)
-    print("lvx_to_las_redtech v3.1 — RedTech Security (chunked)")
+    print("lvx_to_las_ajr v3.1 — AJR Security (chunked)")
     print("=" * 60)
     print(f"Input:  {input_path}")
     print(f"Output: {output_path}")

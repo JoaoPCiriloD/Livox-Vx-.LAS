@@ -1,4 +1,4 @@
-# Pipeline RedTech com FAST-LIO2
+# Pipeline AJR com FAST-LIO2
 
 Este documento descreve o caminho correto para substituir a aproximacao inercial simples por um motor LIO real usando FAST-LIO2.
 
@@ -23,25 +23,25 @@ O FAST-LIO2 e o componente que faz a parte pesada: fusao LiDAR-inercial com IKF,
 
 ## Arquivos adicionados
 
-- `fastlio2/config/avia_redtech.yaml`
+- `fastlio2/config/avia_ajr.yaml`
 - `fastlio2/docker/Dockerfile.noetic`
 - `fastlio2/scripts/build_fastlio2_docker.sh`
 - `fastlio2/scripts/run_fastlio2_docker.sh`
 - `fastlio2/scripts/run_fastlio2_session.sh`
-- `pcd_to_las_redtech.py`
+- `scripts/converters/pcd_to_las_ajr.py`
 - `fastlio2/scripts/run_pcd_to_las.sh`
 
 ## 1. Construir o ambiente FAST-LIO2
 
 ```bash
-cd /home/joaop/Downloads/windows_redtech
+cd /home/joaop/Downloads/ajr_lidar
 bash fastlio2/scripts/build_fastlio2_docker.sh
 ```
 
 Isso cria a imagem:
 
 ```text
-redtech-fastlio2:noetic
+ajr-fastlio2:noetic
 ```
 
 Ela contem:
@@ -56,10 +56,10 @@ Ela contem:
 Exemplo:
 
 ```bash
-cd /home/joaop/Downloads/windows_redtech
+cd /home/joaop/Downloads/ajr_lidar
 bash fastlio2/scripts/run_fastlio2_docker.sh \
   /home/joaop/Downloads/drive-download-20260601T172413Z-3-002/voo_20260529_161358/lidar_2026-05-29T16-13-58Z.lvx \
-  /home/joaop/Downloads/windows_redtech/fastlio2_output/voo_20260529_161358
+  /home/joaop/Downloads/ajr_lidar/fastlio2_output/voo_20260529_161358
 ```
 
 Saidas esperadas:
@@ -74,7 +74,7 @@ fastlio2_output/voo_20260529_161358/
 ## 3. Converter o mapa FAST-LIO2 para LAS
 
 ```bash
-cd /home/joaop/Downloads/windows_redtech
+cd /home/joaop/Downloads/ajr_lidar
 bash fastlio2/scripts/run_pcd_to_las.sh \
   fastlio2_output/voo_20260529_161358/lidar_2026-05-29T16-13-58Z_fastlio2_map.pcd \
   fastlio2_output/voo_20260529_161358/lidar_2026-05-29T16-13-58Z_fastlio2_map.las
@@ -84,12 +84,12 @@ Depois abra no CloudCompare Flatpak:
 
 ```bash
 flatpak run org.cloudcompare.CloudCompare \
-  /home/joaop/Downloads/windows_redtech/fastlio2_output/voo_20260529_161358/lidar_2026-05-29T16-13-58Z_fastlio2_map.las
+  /home/joaop/Downloads/ajr_lidar/fastlio2_output/voo_20260529_161358/lidar_2026-05-29T16-13-58Z_fastlio2_map.las
 ```
 
 ## Parametros Avia
 
-O arquivo `fastlio2/config/avia_redtech.yaml` usa:
+O arquivo `fastlio2/config/avia_ajr.yaml` usa:
 
 - `lid_topic: /livox/lidar`
 - `imu_topic: /livox/imu`

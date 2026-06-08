@@ -13,12 +13,17 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 mkdir -p "${OUT_DIR}"
 
-docker run --rm -it \
+DOCKER_TTY=()
+if [[ -t 0 && -t 1 ]]; then
+  DOCKER_TTY=(-it)
+fi
+
+docker run --rm "${DOCKER_TTY[@]}" \
   --net=host \
   -v "${ROOT_DIR}:/workspace" \
   -v "$(dirname "${LVX}"):/data:ro" \
   -v "${OUT_DIR}:/out" \
-  redtech-fastlio2:noetic \
+  ajr-fastlio2:noetic \
   bash -lc "/workspace/fastlio2/scripts/run_fastlio2_session.sh --lvx /data/$(basename "${LVX}") --out /out"
 
 echo "Saida: ${OUT_DIR}"
