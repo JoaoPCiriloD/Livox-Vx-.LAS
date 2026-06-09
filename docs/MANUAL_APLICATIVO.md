@@ -24,6 +24,10 @@ O aplicativo também oferece o pipeline Python tradicional para análise, conver
 
 Permite colar um caminho ou selecionar uma pasta pelo botão **Selecionar**.
 
+O seletor exibe apenas pastas. Os arquivos `.lvx` e `.ubx` não aparecem nessa
+janela, mesmo quando estão presentes. Entre na pasta correta e clique em
+**Selecionar pasta**.
+
 A pasta de uma sessão deve conter diretamente um arquivo `.lvx`. Também é possível selecionar uma pasta chamada `input`; nesse caso, o nome da pasta pai será usado como nome da sessão.
 
 Exemplos:
@@ -43,7 +47,8 @@ Quando ativada, o aplicativo:
 2. escolhe o maior LVX encontrado;
 3. rejeita arquivos vazios;
 4. limpa mapas antigos da mesma pasta de saída;
-5. executa o wrapper `bin/ajr-fastlio2-lvx.sh`;
+5. executa `bin\ajr-fastlio2-lvx.bat` no Windows ou
+   `bin/ajr-fastlio2-lvx.sh` no Linux;
 6. gera os arquivos `*_fastlio2_map.pcd` e `*_fastlio2_map.las`;
 7. solicita uma pasta de destino;
 8. copia os resultados e logs sem bloquear a interface;
@@ -193,7 +198,19 @@ command -v cloudcompare || flatpak info org.cloudcompare.CloudCompare
 
 ### Windows
 
-A interface PySide6 pode ser empacotada como executável, mas o fluxo FAST-LIO2 depende de Docker Desktop e WSL2. O código atual ainda chama o wrapper Linux `.sh`; a seleção automática do wrapper `.bat` precisa ser implementada antes da distribuição final para Windows.
+A interface PySide6 roda nativamente no Windows, mas o fluxo FAST-LIO2 depende
+de Docker Desktop e WSL2. O comando usado no Windows é:
+
+```text
+cmd.exe /d /c bin\ajr-fastlio2-lvx.bat <LVX> <SAIDA>
+```
+
+Use ambientes separados:
+
+```text
+.venv-windows -> interface PySide6
+.venv-wsl     -> scripts Python no Ubuntu/WSL
+```
 
 Consulte `docs/GUIA_WINDOWS.md` para o passo a passo completo, incluindo os caminhos `C:\Users\...` e `/mnt/c/Users/...`.
 
@@ -213,7 +230,36 @@ Foi selecionada uma pasta que contém várias subpastas de voo. Selecione apenas
 
 ### Saída não encontrada para copiar
 
-O processo terminou sem criar a pasta esperada. Consulte o log do aplicativo e `fastlio2_output/<sessao>/logs/`.
+O processo terminou sem criar a pasta esperada. No Windows, isso normalmente
+indica que o wrapper `.bat` perdeu o argumento da saída ao converter o caminho
+para WSL. Consulte o log do aplicativo, confirme o uso de `!OUT_WSL!` no
+wrapper e verifique `fastlio2_output/<sessao>/logs/`.
+
+### `run_id` não corresponde ou `Connection refused`
+
+Mais de um ROS master foi iniciado, ou o `roscore` encerrou durante o
+processamento. `run_fastlio2_session.sh` deve iniciar um único `roscore` antes
+da conversão LVX e mantê-lo ativo até o final. Consulte `logs/roscore.log`.
+
+### Erro `pipefail` ou `here-document`
+
+O script Linux provavelmente foi salvo com final de linha `CRLF` ou possui um
+heredoc inválido. Salve como `LF` e valide:
+
+```powershell
+wsl bash -n "/mnt/c/caminho/do/projeto/fastlio2/scripts/run_fastlio2_session.sh"
+```
+
+### Aparentemente parado em `Tocando rosbag`
+
+Essa etapa pode levar vários minutos sem atualizar a interface. Verifique:
+
+```powershell
+wsl docker ps
+wsl docker stats --no-stream
+```
+
+Se o contêiner estiver ativo e consumindo CPU ou disco, aguarde.
 
 ### CloudCompare não encontrado
 

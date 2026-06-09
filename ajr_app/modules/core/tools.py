@@ -23,6 +23,16 @@ def pipeline_command(folder, batch=False, skip_cloudcompare=True):
 
 
 def fastlio2_command(lvx_file, output_dir):
+    if sys.platform == "win32":
+        return [
+            "cmd.exe",
+            "/d",
+            "/c",
+            str(PROJECT_ROOT / "bin" / "ajr-fastlio2-lvx.bat"),
+            str(lvx_file),
+            str(output_dir),
+        ]
+
     return [
         "bash",
         str(PROJECT_ROOT / "bin" / "ajr-fastlio2-lvx.sh"),

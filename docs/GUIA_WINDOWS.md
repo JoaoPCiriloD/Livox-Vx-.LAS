@@ -1,216 +1,138 @@
-# Guia Completo do AJR LiDAR no Windows
+# Guia do AJR LiDAR no Windows
 
-Este guia explica como organizar o projeto, preparar o Windows, executar o pipeline FAST-LIO2 pelo WSL2 e localizar os resultados.
+Este guia descreve o fluxo integrado do aplicativo PySide6 com FAST-LIO2 no
+Windows, usando WSL2 e Docker Desktop.
 
-## 1. Como o processamento funciona no Windows
+## 1. Arquitetura
 
-O aplicativo possui interface Windows, mas o FAST-LIO2 depende de ROS Noetic e ferramentas Linux. Por isso, o processamento usa esta arquitetura:
+O aplicativo roda nativamente no Windows. O processamento pesado roda no
+Ubuntu/WSL2:
 
 ```text
-Windows -> aplicativo ou arquivo .bat -> WSL2/Ubuntu -> Docker -> FAST-LIO2 -> LAS -> CloudCompare Windows
+PySide6 no Windows
+-> cmd.exe
+-> bin\ajr-fastlio2-lvx.bat
+-> WSL2/Ubuntu
+-> Docker Desktop
+-> ROS Noetic + FAST-LIO2
+-> PCD + LAS em uma pasta do Windows
+-> janela para escolher onde salvar
+-> CloudCompare
 ```
 
-O Docker utilizado é local: ele roda no computador do cliente por meio do Docker Desktop.
-
-## 2. Estado atual do aplicativo
-
-Atualmente:
-
-- `ajr.bat` executa o pipeline Python diretamente no Windows;
-- `bin\ajr-fastlio2-lvx.bat` executa FAST-LIO2 pelo WSL2;
-- a interface PySide6 pode abrir no Windows;
-- a interface ainda precisa ser adaptada para escolher automaticamente o `.bat` no Windows, pois hoje chama o wrapper Linux `.sh`.
-
-Enquanto essa adaptação não for implementada, teste o FAST-LIO2 no Windows usando `bin\ajr-fastlio2-lvx.bat`.
-
-## 3. Caminho recomendado do projeto
-
-Extraia ou copie o projeto para:
+Os ambientes têm funções diferentes:
 
 ```text
-C:\Users\SEU_USUARIO\Downloads\ajr_lidar
+.venv-windows -> interface PySide6 no Windows
+.venv-wsl     -> scripts Python auxiliares no Ubuntu/WSL
+Docker        -> ROS Noetic, Livox ROS Driver e FAST-LIO2
 ```
 
-Exemplo para o usuário João:
+Não reutilize uma mesma `.venv` entre Windows e WSL. Um ambiente Linux contém
+`bin/python`; um ambiente Windows contém `Scripts\python.exe`.
+
+## 2. Estrutura esperada
 
 ```text
-C:\Users\Joao\Downloads\ajr_lidar
-```
-
-A estrutura mínima esperada é:
-
-```text
-C:\Users\SEU_USUARIO\Downloads\ajr_lidar\
+C:\Users\joaop\Livox-Vx-.LAS\
+├── .venv-windows\
+├── .venv-wsl\
 ├── ajr_app\
+│   └── manage.py
 ├── bin\
 │   ├── ajr-fastlio2-lvx.bat
 │   └── ajr-fastlio2-lvx.sh
 ├── fastlio2\
 ├── scripts\
-├── requirements.txt
-└── README.md
+├── fastlio2_output\
+└── requirements.txt
 ```
 
-Evite nomes diferentes, como `ajrd_app`, e não coloque o projeto dentro de outra pasta com o mesmo nome.
+Os nomes podem mudar, mas todos os componentes precisam permanecer na mesma
+raiz do projeto.
 
-## 4. Instalar os requisitos
+## 3. Requisitos
 
-### 4.1 WSL2 e Ubuntu
+- Windows 10 ou 11.
+- Python 3.10 ou superior para Windows.
+- WSL2 com Ubuntu.
+- Docker Desktop com integração WSL habilitada.
+- CloudCompare para Windows.
+- Arquivo `.lvx` válido e não vazio.
+- Espaço livre suficiente para LVX, rosbag, PCD e LAS.
 
-Abra o PowerShell como administrador e execute:
-
-```powershell
-wsl --install -d Ubuntu
-```
-
-Reinicie o computador quando solicitado. Depois abra o Ubuntu pelo menu Iniciar e conclua a criação do usuário Linux.
-
-Confirme no PowerShell:
+Confirme o WSL2 no PowerShell:
 
 ```powershell
 wsl --status
 wsl --list --verbose
 ```
 
-A distribuição Ubuntu deve aparecer usando a versão `2`.
+O Ubuntu deve aparecer com versão `2`.
 
-Caso apareça como versão `1`:
+Confirme o Docker:
 
 ```powershell
-wsl --set-version Ubuntu 2
+wsl docker version
+wsl docker ps
 ```
 
-### 4.2 Docker Desktop
+Se falhar, abra o Docker Desktop e habilite:
 
-1. Instale o Docker Desktop para Windows.
-2. Abra **Settings > General**.
-3. Ative **Use the WSL 2 based engine**.
-4. Abra **Settings > Resources > WSL Integration**.
-5. Ative a integração para a distribuição Ubuntu.
-6. Reinicie o Docker Desktop.
-
-No terminal Ubuntu, confirme:
-
-```bash
-docker version
-docker ps
+```text
+Settings > General > Use the WSL 2 based engine
+Settings > Resources > WSL Integration > Ubuntu
 ```
 
-### 4.3 Python para Windows
-
-Instale Python 3.10 ou superior e marque **Add Python to PATH** durante a instalação.
+## 4. Ambiente do aplicativo Windows
 
 No PowerShell:
 
 ```powershell
-python --version
+cd "C:\Users\joaop\Livox-Vx-.LAS"
+
+py -3 -m venv .venv-windows
+.\.venv-windows\Scripts\python.exe -m pip install --upgrade pip
+.\.venv-windows\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv-windows\Scripts\python.exe -m pip install PySide6 pyinstaller
 ```
 
-### 4.4 CloudCompare
-
-Instale a versão Windows do CloudCompare. Ele será usado para abrir o arquivo final:
-
-```text
-*_fastlio2_map.las
-```
-
-## 5. Preparar o ambiente Python do Windows
-
-Abra o PowerShell e entre na raiz do projeto:
+Teste:
 
 ```powershell
-cd "$env:USERPROFILE\Downloads\ajr_lidar"
+.\.venv-windows\Scripts\python.exe -c "import PySide6; print('PySide6 OK')"
 ```
 
-Crie a `.venv`:
-
-```powershell
-python -m venv .venv
-```
-
-Instale as dependências usando diretamente o Python dessa `.venv`:
-
-```powershell
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m pip install PySide6 pyinstaller
-```
-
-Teste o PySide6:
-
-```powershell
-.\.venv\Scripts\python.exe -c "import PySide6; print('PySide6 OK')"
-```
-
-Usar o caminho completo da `.venv` evita o erro:
+Não execute a interface com uma `.venv` criada no WSL. O erro típico é:
 
 ```text
-ModuleNotFoundError: No module named 'PySide6'
+did not find executable at '/usr/bin\python.exe'
 ```
 
-## 6. Entender os caminhos Windows e WSL
+## 5. Ambiente auxiliar do WSL
 
-O mesmo diretório possui caminhos diferentes em cada ambiente:
-
-```text
-Windows: C:\Users\Joao\Downloads\ajr_lidar
-WSL:     /mnt/c/Users/Joao/Downloads/ajr_lidar
-```
-
-Outro exemplo:
-
-```text
-Windows: C:\Users\Joao\Downloads\voo_20260604_213246\lidar.lvx
-WSL:     /mnt/c/Users/Joao/Downloads/voo_20260604_213246/lidar.lvx
-```
-
-Para converter manualmente um caminho no WSL:
+No Ubuntu:
 
 ```bash
-wslpath 'C:\Users\Joao\Downloads\voo\lidar.lvx'
-```
+cd /mnt/c/Users/joaop/Livox-Vx-.LAS
 
-O wrapper `.bat` já faz essa conversão automaticamente.
-
-## 7. Preparar o ambiente dentro do WSL
-
-Abra o Ubuntu e acesse o projeto:
-
-```bash
-cd /mnt/c/Users/SEU_USUARIO/Downloads/ajr_lidar
-```
-
-Exemplo:
-
-```bash
-cd /mnt/c/Users/Joao/Downloads/ajr_lidar
-```
-
-Instale os componentes básicos, caso ainda não existam:
-
-```bash
 sudo apt update
 sudo apt install -y python3 python3-venv python3-pip
-```
 
-Crie um ambiente separado para o WSL:
-
-```bash
 python3 -m venv .venv-wsl
 .venv-wsl/bin/python -m pip install --upgrade pip
 .venv-wsl/bin/python -m pip install -r requirements.txt
 ```
 
-Construa a imagem FAST-LIO2:
+O wrapper Linux deve usar `.venv-wsl/bin/python`, não o ambiente do Windows.
+
+## 6. Construir a imagem Docker
+
+No Ubuntu:
 
 ```bash
+cd /mnt/c/Users/joaop/Livox-Vx-.LAS
 bash fastlio2/scripts/build_fastlio2_docker.sh
-```
-
-A imagem esperada é:
-
-```text
-ajr-fastlio2:noetic
 ```
 
 Confirme:
@@ -219,162 +141,301 @@ Confirme:
 docker image inspect ajr-fastlio2:noetic
 ```
 
-## 8. Executar pelo PowerShell
-
-Este é o caminho mais simples para testar no Windows.
-
-Entre na raiz do projeto:
-
-```powershell
-cd "$env:USERPROFILE\Downloads\ajr_lidar"
-```
-
-Execute informando o arquivo LVX:
-
-```powershell
-.\bin\ajr-fastlio2-lvx.bat `
-  "C:\Users\SEU_USUARIO\Downloads\voo_20260604_213246\lidar.lvx"
-```
-
-Para escolher a pasta de saída:
-
-```powershell
-.\bin\ajr-fastlio2-lvx.bat `
-  "C:\Users\SEU_USUARIO\Downloads\voo_20260604_213246\lidar.lvx" `
-  "C:\Users\SEU_USUARIO\Downloads\resultado_lidar\voo_20260604_213246"
-```
-
-Em uma única linha:
-
-```powershell
-.\bin\ajr-fastlio2-lvx.bat "C:\Users\SEU_USUARIO\Downloads\voo\lidar.lvx" "C:\Users\SEU_USUARIO\Downloads\resultado_lidar\meu_voo"
-```
-
-Sempre coloque caminhos entre aspas, principalmente quando houver espaços.
-
-## 9. Executar diretamente pelo Ubuntu/WSL
-
-Entre no projeto:
+Se aparecer `set: pipefail: invalid option name`, os scripts estão com final de
+linha Windows (`CRLF`). Converta para `LF`:
 
 ```bash
-cd /mnt/c/Users/SEU_USUARIO/Downloads/ajr_lidar
+sed -i 's/\r$//' fastlio2/scripts/*.sh
+sed -i 's/\r$//' bin/*.sh
 ```
 
-Execute:
+Valide um script antes de executar:
 
 ```bash
-bash bin/ajr-fastlio2-lvx.sh \
-  /mnt/c/Users/SEU_USUARIO/Downloads/voo_20260604_213246/lidar.lvx \
-  /mnt/c/Users/SEU_USUARIO/Downloads/resultado_lidar/voo_20260604_213246
+bash -n fastlio2/scripts/run_fastlio2_session.sh
 ```
 
-O fluxo executado será:
+Nenhuma saída significa sintaxe válida.
+
+## 7. Integração da interface com Windows
+
+Em `ajr_app\modules\core\tools.py`, `fastlio2_command()` deve selecionar o
+wrapper conforme o sistema:
+
+```python
+def fastlio2_command(lvx_file, output_dir):
+    if sys.platform == "win32":
+        return [
+            "cmd.exe",
+            "/d",
+            "/c",
+            str(PROJECT_ROOT / "bin" / "ajr-fastlio2-lvx.bat"),
+            str(lvx_file),
+            str(output_dir),
+        ]
+
+    return [
+        "bash",
+        str(PROJECT_ROOT / "bin" / "ajr-fastlio2-lvx.sh"),
+        str(lvx_file),
+        str(output_dir),
+    ]
+```
+
+No log do aplicativo Windows, o comando deve começar com:
 
 ```text
-LVX -> ROS bag -> FAST-LIO2 -> PCD -> LAS
+cmd.exe /d /c
 ```
 
-## 10. Abrir a interface no Windows
+Se começar com `/bin/bash` ou `bash`, o aplicativo ainda está chamando o
+wrapper Linux diretamente.
 
-No estado atual, a interface pode ser aberta para testar o layout e o pipeline Python:
+## 8. Wrapper Windows
 
-```powershell
-cd "$env:USERPROFILE\Downloads\ajr_lidar"
-.\.venv\Scripts\python.exe .\ajr_app\manage.py
+`bin\ajr-fastlio2-lvx.bat` converte os caminhos Windows para WSL. Ele precisa de
+expansão atrasada porque `OUT_WSL` é definido dentro de um bloco:
+
+```bat
+@echo off
+setlocal EnableDelayedExpansion
+
+if "%~1"=="" goto :help
+if "%~1"=="-h" goto :help
+if "%~1"=="--help" goto :help
+
+where wsl >nul 2>nul
+if errorlevel 1 (
+  echo ERRO: WSL2 nao encontrado.
+  exit /b 1
+)
+
+for /f "delims=" %%I in ('wsl wslpath -a "%~dp0.."') do set "REPO_WSL=%%I"
+for /f "delims=" %%I in ('wsl wslpath -a "%~1"') do set "LVX_WSL=%%I"
+
+if "%~2"=="" (
+  wsl bash -lc "cd '!REPO_WSL!' && bash bin/ajr-fastlio2-lvx.sh '!LVX_WSL!'"
+) else (
+  for /f "delims=" %%I in ('wsl wslpath -a "%~2"') do set "OUT_WSL=%%I"
+  wsl bash -lc "cd '!REPO_WSL!' && bash bin/ajr-fastlio2-lvx.sh '!LVX_WSL!' '!OUT_WSL!'"
+)
+
+exit /b %errorlevel%
+
+:help
+echo Uso:
+echo   bin\ajr-fastlio2-lvx.bat "C:\caminho\arquivo.lvx" [OUT_DIR]
+exit /b 0
 ```
 
-Não use apenas `python manage.py` sem confirmar o ambiente, pois isso pode chamar outro Python instalado no Windows.
-
-O botão FAST-LIO2 do app só estará pronto para uso no Windows depois que o código selecionar `bin\ajr-fastlio2-lvx.bat` nesse sistema.
-
-## 11. Pipeline Python tradicional
-
-Para processar uma sessão sem FAST-LIO2:
-
-```powershell
-cd "$env:USERPROFILE\Downloads\ajr_lidar"
-.\ajr.bat "C:\Users\SEU_USUARIO\Downloads\voo_20260604_213246"
-```
-
-Para várias sessões:
-
-```powershell
-.\ajr.bat "C:\Users\SEU_USUARIO\Downloads\Testes" --batch
-```
-
-Os resultados ficam em:
+Sem `EnableDelayedExpansion` e `!OUT_WSL!`, o resultado pode ser criado em:
 
 ```text
-C:\Users\SEU_USUARIO\Downloads\ajr_lidar\sessoes\<nome_da_sessao>
+/mnt/wsl/docker-desktop-bind-mounts/...
 ```
 
-Esse pipeline não substitui o mapa reconstruído pelo FAST-LIO2.
-
-## 12. Localizar os resultados
-
-Quando uma pasta de saída Windows for informada ao `.bat`, procure:
+Nesse caso, o processo termina com código `0`, mas o aplicativo informa:
 
 ```text
-C:\Users\SEU_USUARIO\Downloads\resultado_lidar\<sessao>\
+Saida nao encontrada para copiar
+```
+
+## 9. Controle do ROS
+
+`fastlio2/scripts/run_fastlio2_session.sh` deve iniciar somente um `roscore`,
+antes da conversão LVX para rosbag, e mantê-lo ativo até o final.
+
+O script também deve:
+
+- esperar `rosparam get /run_id` responder;
+- usar o mesmo ROS master na conversão e no FAST-LIO2;
+- encerrar `roslaunch`, FAST-LIO2 e `roscore` em `cleanup()`;
+- validar se FAST-LIO2 continua ativo antes de tocar o rosbag;
+- salvar logs em `<saida>\logs`.
+
+Se dois ROS masters forem iniciados, o log pode mostrar:
+
+```text
+RLException: run_id on parameter server does not match declared run_id
+[master] killing on exit
+Error in XmlRpcClient::writeRequest: write error (Connection refused)
+```
+
+Essa execução deve ser interrompida e o controle do `roscore` corrigido.
+
+## 10. Executar o aplicativo
+
+No PowerShell:
+
+```powershell
+cd "C:\Users\joaop\Livox-Vx-.LAS"
+.\.venv-windows\Scripts\python.exe .\ajr_app\manage.py
+```
+
+Não é necessário ativar o ambiente se o caminho completo do Python for usado.
+
+Na interface:
+
+1. Clique em **Selecionar**.
+2. Entre na pasta que contém diretamente o `.lvx`.
+3. Clique em **Selecionar pasta**.
+4. Mantenha marcada a opção FAST-LIO2.
+5. Clique em **Executar Pipeline**.
+6. Aguarde a conclusão.
+7. Escolha uma pasta do Windows quando a janela de salvamento abrir.
+
+O seletor mostra pastas, não arquivos. É normal que `.lvx` e `.ubx` não sejam
+exibidos nessa janela.
+
+Para confirmar os arquivos da sessão:
+
+```powershell
+Get-ChildItem "C:\caminho\da\sessao" -File |
+    Where-Object Extension -in ".lvx", ".ubx"
+```
+
+O FAST-LIO2 usa o `.lvx`. O `.ubx` é usado pelo pipeline tradicional de
+georreferenciamento quando necessário.
+
+## 11. Etapas esperadas no log
+
+```text
+==> Instalando/validando dependencias Python
+==> Executando FAST-LIO2
+==> Copiando config FAST-LIO2
+==> Iniciando roscore
+==> Convertendo LVX para rosbag
+Rosbag: ...
+==> Iniciando FAST-LIO2
+==> Tocando rosbag
+==> Encerrando FAST-LIO2
+PCD FAST-LIO2: ...
+==> Convertendo PCD para LAS
+Concluido
+Codigo da saida: 0
+```
+
+`Tocando rosbag` pode permanecer vários minutos sem novas mensagens. Isso não
+significa necessariamente travamento.
+
+## 12. Acompanhar o processamento
+
+Ver contêineres ativos:
+
+```powershell
+wsl docker ps
+wsl docker stats --no-stream
+```
+
+CPU ou leitura de disco acima de zero normalmente indicam atividade.
+
+Encontrar a saída mais recente:
+
+```powershell
+$saida = Get-ChildItem "C:\Users\joaop\Livox-Vx-.LAS\fastlio2_output" -Directory |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1
+```
+
+Acompanhar FAST-LIO2:
+
+```powershell
+Get-Content "$($saida.FullName)\logs\fastlio2.log" -Tail 30 -Wait
+```
+
+Acompanhar rosbag:
+
+```powershell
+Get-Content "$($saida.FullName)\logs\rosbag_play.log" -Tail 30 -Wait
+```
+
+Pressione `Ctrl+C` para sair do acompanhamento. Isso não interrompe o processo.
+
+## 13. Resultados e salvamento
+
+A saída interna esperada é:
+
+```text
+C:\Users\joaop\Livox-Vx-.LAS\fastlio2_output\<sessao>\
 ├── *_fastlio2_map.pcd
 ├── *_fastlio2_map.las
 └── logs\
 ```
 
-O arquivo recomendado para abrir no CloudCompare é:
+Após código de saída `0`, o aplicativo deve abrir uma janela para escolher o
+destino. Ele cria:
 
 ```text
-*_fastlio2_map.las
+<destino escolhido>\<sessao>\
+├── *_fastlio2_map.pcd
+├── *_fastlio2_map.las
+└── logs\
 ```
 
-Se os resultados forem salvos no sistema de arquivos do Ubuntu, abra o Explorador de Arquivos e digite:
+Para localizar qualquer LAS no projeto:
+
+```powershell
+Get-ChildItem "C:\Users\joaop\Livox-Vx-.LAS" `
+    -Recurse -Filter "*_fastlio2_map.las"
+```
+
+## 14. Diagnóstico de erros
+
+| Sintoma ou mensagem | Causa provável | Ação |
+|---|---|---|
+| `did not find executable at '/usr/bin\python.exe'` | `.venv` Linux usada no Windows | Execute `.venv-windows\Scripts\python.exe` |
+| `No module named PySide6` | PySide6 ausente no ambiente Windows | Instale com o Python de `.venv-windows` |
+| `/bin/bash: C:\... No such file or directory` | App Windows chamou o `.sh` | Use `cmd.exe /d /c` e o wrapper `.bat` |
+| `wsl` não é reconhecido | WSL ausente | Instale WSL2 e Ubuntu |
+| Docker não responde | Docker Desktop parado ou sem integração | Ative a integração WSL para Ubuntu |
+| `set: pipefail: invalid option name` | Script `.sh` em CRLF | Converta o arquivo para LF |
+| `here-document ... wanted 'USAGE'` | Heredoc inválido, indentado ou em CRLF | Use LF, prefira `printf` e valide com `bash -n` |
+| `RLException: run_id ... do not match` | Mais de um ROS master | Inicie um único `roscore` antes da conversão |
+| `XmlRpcClient ... Connection refused` | `roscore` encerrou durante o processamento | Consulte `roscore.log` |
+| Parado em `Tocando rosbag` | Pode estar processando normalmente | Confira `docker stats` e os logs |
+| `FAST-LIO2 nao gerou PCD` | FAST-LIO2 falhou ou tópicos são inválidos | Consulte `fastlio2.log` e `rosbag_info.log` |
+| `Saida nao encontrada para copiar` | `.bat` perdeu o caminho de saída | Use delayed expansion com `!OUT_WSL!` |
+| Código `0`, sem janela de salvamento | Saída criada fora do caminho esperado | Confira `fastlio2_output\<sessao>` |
+| CloudCompare não abre | Executável fora do `PATH` | Abra o LAS manualmente ou configure o caminho |
+| Nenhum `.lvx` encontrado | Pasta errada ou arquivo em subpasta | Selecione a pasta que contém diretamente o LVX |
+| LVX vazio ou inválido | Arquivo com zero bytes | Use uma captura válida |
+| Disco cheio | Rosbag, PCD e LAS consomem muito espaço | Libere espaço e remova saídas parciais |
+
+## 15. Logs importantes
 
 ```text
-\\wsl$\Ubuntu
+logs\lvx_to_rosbag.log
+logs\roscore.log
+logs\fastlio2.log
+logs\rosbag_play.log
+logs\rosbag_info.log
+logs\normalize_bag.log
 ```
 
-É preferível salvar resultados em `/mnt/c/...`, pois eles ficam diretamente acessíveis pelo Windows.
+Ordem recomendada de diagnóstico:
 
-## 13. Teste mínimo antes de gerar o executável
+1. `roscore.log`;
+2. `lvx_to_rosbag.log`;
+3. `rosbag_info.log`;
+4. `fastlio2.log`;
+5. `rosbag_play.log`.
 
-Execute na ordem:
+## 16. Teste mínimo
 
 ```powershell
 wsl --list --verbose
 wsl docker ps
-.\.venv\Scripts\python.exe -c "import PySide6; print('PySide6 OK')"
-.\bin\ajr-fastlio2-lvx.bat "C:\caminho\para\arquivo_valido.lvx" "C:\caminho\para\resultado"
+.\.venv-windows\Scripts\python.exe -c "import PySide6; print('PySide6 OK')"
+wsl bash -n "/mnt/c/Users/joaop/Livox-Vx-.LAS/fastlio2/scripts/run_fastlio2_session.sh"
 ```
 
-Considere o ambiente aprovado quando:
+Teste manual do wrapper:
 
-1. o WSL2 estiver ativo;
-2. o Docker responder dentro do WSL;
-3. o PySide6 importar sem erro;
-4. o wrapper gerar `*_fastlio2_map.las`;
-5. o LAS abrir corretamente no CloudCompare para Windows.
+```powershell
+.\bin\ajr-fastlio2-lvx.bat `
+  "C:\caminho\arquivo.lvx" `
+  "C:\Users\joaop\Livox-Vx-.LAS\fastlio2_output\teste"
+```
 
-## 14. Problemas comuns
-
-| Erro | Causa provável | Solução |
-|---|---|---|
-| `No module named PySide6` | Python fora da `.venv` | Use `.\.venv\Scripts\python.exe` |
-| `wsl` não é reconhecido | WSL2 não instalado | Execute `wsl --install -d Ubuntu` como administrador |
-| Docker não responde no Ubuntu | Integração WSL desativada | Ative Ubuntu em Docker Desktop > WSL Integration |
-| `bash` não é reconhecido pelo app | App ainda chamou o wrapper Linux no Windows | Use `bin\ajr-fastlio2-lvx.bat` manualmente |
-| Arquivo LVX não encontrado | Caminho incorreto ou sem aspas | Use o caminho completo entre aspas |
-| LVX vazio ou inválido | Arquivo com zero bytes | Use uma captura LVX válida |
-| Nenhum mapa LAS foi criado | Falha no FAST-LIO2 | Consulte a pasta `logs` da saída |
-| CloudCompare não abre | Instalação ausente ou fora do PATH | Abra manualmente o `*_fastlio2_map.las` |
-| Acesso negado pelo Docker | Docker Desktop parado | Abra o Docker Desktop e aguarde inicializar |
-
-## 15. Próximo passo para o executável
-
-Antes de gerar o `.exe`, o aplicativo precisa:
-
-1. detectar `sys.platform == "win32"`;
-2. chamar `bin\ajr-fastlio2-lvx.bat` no Windows;
-3. localizar o CloudCompare instalado no Windows;
-4. armazenar saídas em caminhos graváveis fora da pasta do executável;
-5. incluir a logo e os scripts necessários no pacote PyInstaller;
-6. ser testado em uma instalação limpa do Windows.
+Considere o ambiente validado quando o LAS aparecer no caminho Windows
+informado e a interface abrir a janela para escolher o destino final.

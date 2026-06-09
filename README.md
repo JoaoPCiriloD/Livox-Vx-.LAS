@@ -66,7 +66,9 @@ Documentacao do aplicativo:
 - `docs/MANUAL_APLICATIVO.md`: manual de uso e referencia das funcoes.
 - `docs/APLICATIVO_AJR.md`: instalacao, ambiente e diagnostico.
 
-O fluxo completo do aplicativo esta preparado para Linux. No Windows, a interface exige uma adaptacao para chamar automaticamente o wrapper `.bat`; consulte `docs/GUIA_WINDOWS.md`.
+No Windows, a interface usa `cmd.exe` e `bin\ajr-fastlio2-lvx.bat` para
+encaminhar o processamento ao WSL2/Docker. Use ambientes separados para
+Windows e WSL; consulte `docs/GUIA_WINDOWS.md`.
 
 ## Execucao Rapida
 
@@ -158,7 +160,18 @@ O FAST-LIO2 no Windows utiliza Docker Desktop com WSL2. O caminho recomendado do
 C:\Users\SEU_USUARIO\Downloads\ajr_lidar
 ```
 
-Execução rápida pelo PowerShell:
+Prepare e abra a interface pelo PowerShell:
+
+```powershell
+cd "$env:USERPROFILE\Downloads\ajr_lidar"
+py -3 -m venv .venv-windows
+.\.venv-windows\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv-windows\Scripts\python.exe -m pip install PySide6
+.\.venv-windows\Scripts\python.exe .\ajr_app\manage.py
+```
+
+O aplicativo chama automaticamente o wrapper `.bat`. Para testar o wrapper
+sem a interface:
 
 ```powershell
 cd "$env:USERPROFILE\Downloads\ajr_lidar"
@@ -167,7 +180,8 @@ cd "$env:USERPROFILE\Downloads\ajr_lidar"
   "C:\Users\SEU_USUARIO\Downloads\resultado_lidar\meu_voo"
 ```
 
-O guia completo de instalação, conversão de caminhos Windows/WSL, testes e localização dos resultados está em `docs/GUIA_WINDOWS.md`.
+O guia completo de ambientes, integração, conversão de caminhos, logs,
+salvamento e erros conhecidos está em `docs/GUIA_WINDOWS.md`.
 
 ## macOS
 
