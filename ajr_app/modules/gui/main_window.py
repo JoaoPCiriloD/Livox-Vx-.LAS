@@ -24,7 +24,6 @@ from PySide6.QtWidgets import (
 from modules.core.tools import fastlio2_command, fastlio2_output_dir, pipeline_command
 from ajr_desktop.settings import LOGO_PATH, PROJECT_ROOT
 
-
 class CopyWorker(QObject):
     message = Signal(str)
     finished = Signal(bool, object)
