@@ -122,18 +122,40 @@ Se a imagem ainda nao existir, o wrapper tenta construir automaticamente.
 
 ## Windows
 
-No Windows, o app visual pode funcionar com PySide6, mas o FAST-LIO2 precisa de Docker Desktop com WSL2. O fluxo recomendado e:
+No Windows, a interface roda no ambiente `.venv-windows` e o FAST-LIO2 usa
+WSL2 com Docker Desktop:
 
 ```text
 App Windows -> bin/ajr-fastlio2-lvx.bat -> WSL -> Docker -> FAST-LIO2
 ```
 
-O app deve chamar o `.bat` no Windows e o `.sh` no Linux/macOS.
+O aplicativo seleciona o wrapper pelo sistema operacional:
 
+```text
+Windows     -> cmd.exe /d /c bin\ajr-fastlio2-lvx.bat
+Linux/macOS -> bash bin/ajr-fastlio2-lvx.sh
+```
 
-## Estado do suporte Windows
+Abra no PowerShell:
 
-A selecao automatica do wrapper por sistema operacional ainda precisa ser implementada. Atualmente, o fluxo completo do app esta preparado para Linux. Consulte `docs/GUIA_WINDOWS.md`.
+```powershell
+cd "C:\Users\joaop\Livox-Vx-.LAS"
+.\.venv-windows\Scripts\python.exe .\ajr_app\manage.py
+```
+
+Não compartilhe ambientes virtuais:
+
+```text
+.venv-windows -> PySide6 no Windows
+.venv-wsl     -> scripts auxiliares no Ubuntu
+```
+
+O wrapper `.bat` precisa preservar o caminho de saída convertido para WSL.
+Caso contrário, o processamento pode terminar em um diretório temporário e o
+aplicativo mostrará `Saida nao encontrada para copiar`.
+
+Consulte `docs/GUIA_WINDOWS.md` para instalação, scripts de referência,
+acompanhamento e diagnóstico.
 
 ## Diagnostico rapido
 
@@ -152,3 +174,11 @@ fastlio2_output/<sessao>/logs/
 ```
 
 O arquivo LVX selecionado deve existir e ter tamanho maior que zero.
+
+No Windows, também verifique:
+
+```powershell
+wsl docker ps
+wsl docker stats --no-stream
+Get-ChildItem ".\fastlio2_output" -Recurse -Filter "*_fastlio2_map.las"
+```
