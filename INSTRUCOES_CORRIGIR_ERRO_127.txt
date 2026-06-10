@@ -1,0 +1,279 @@
+AJR LIDAR - CORRECAO DO CODIGO DE SAIDA 127
+============================================================
+
+O codigo 127 normalmente significa que um comando nao foi encontrado
+dentro do Ubuntu/WSL. As causas mais comuns neste projeto sao:
+
+- Python 3 ou python3-venv ausente no WSL;
+- Docker Desktop fechado;
+- integracao do Docker com o Ubuntu/WSL desabilitada;
+- ambiente .venv-wsl ausente ou copiado de outro computador;
+- arquivos do projeto desatualizados.
+
+Execute todas as etapas abaixo na ordem indicada.
+
+
+1. FECHAR O APLICATIVO
+============================================================
+
+Feche o aplicativo AJR LiDAR antes de continuar.
+
+
+2. ABRIR O POWERSHELL
+============================================================
+
+Abra o PowerShell no Windows.
+
+Entre na pasta do projeto:
+
+cd C:\Users\lucio\Downloads\ajr_lidar
+
+Confirme que esta na pasta correta:
+
+dir
+
+Devem aparecer, entre outros:
+
+- ajr_app
+- bin
+- fastlio2
+- requirements.txt
+
+
+3. ATUALIZAR O PROJETO
+============================================================
+
+Execute:
+
+git status
+git pull
+
+Se o Git informar que a branch nao possui upstream, execute:
+
+git branch -r
+
+Se aparecer origin/main:
+
+git branch --set-upstream-to=origin/main main
+git pull
+
+Se aparecer origin/master:
+
+git branch --set-upstream-to=origin/master master
+git pull
+
+
+4. VERIFICAR O WSL
+============================================================
+
+Ainda no PowerShell, execute:
+
+wsl --status
+wsl --list --verbose
+
+O Ubuntu deve aparecer na lista e deve estar usando WSL 2.
+
+Teste o Ubuntu:
+
+wsl bash -lc "echo WSL_OK"
+
+O resultado esperado e:
+
+WSL_OK
+
+
+5. PREPARAR O UBUNTU/WSL
+============================================================
+
+Abra o Ubuntu pelo menu Iniciar do Windows.
+
+Dentro do Ubuntu, entre no projeto:
+
+cd /mnt/c/Users/lucio/Downloads/ajr_lidar
+
+Confirme o caminho:
+
+pwd
+
+Atualize os pacotes:
+
+sudo apt update
+
+Instale Python e suporte a ambientes virtuais:
+
+sudo apt install -y python3 python3-venv python3-pip
+
+Confirme a instalacao:
+
+python3 --version
+
+
+6. RECRIAR O AMBIENTE PYTHON DO WSL
+============================================================
+
+Ainda no Ubuntu e dentro da pasta do projeto, execute:
+
+rm -rf .venv-wsl
+python3 -m venv .venv-wsl
+.venv-wsl/bin/python -m pip install --upgrade pip
+.venv-wsl/bin/python -m pip install -r requirements.txt
+
+Valide o ambiente:
+
+.venv-wsl/bin/python --version
+.venv-wsl/bin/python -c "import laspy, numpy; print('PYTHON_WSL_OK')"
+
+O ultimo comando deve imprimir:
+
+PYTHON_WSL_OK
+
+IMPORTANTE:
+
+Nao execute:
+
+python3 .venv-wsl/bin/python
+
+O arquivo .venv-wsl/bin/python ja e o executavel. Ele deve ser chamado
+diretamente, como nos exemplos acima.
+
+
+7. PREPARAR O DOCKER DESKTOP
+============================================================
+
+No Windows, abra o Docker Desktop e aguarde ate ele informar que esta
+em execucao.
+
+No Docker Desktop, verifique:
+
+Settings > General > Use the WSL 2 based engine
+
+Depois verifique:
+
+Settings > Resources > WSL Integration
+
+Habilite a integracao para o Ubuntu utilizado pelo projeto.
+
+Clique em Apply & Restart, se essa opcao aparecer.
+
+
+8. TESTAR O DOCKER NO WSL
+============================================================
+
+Volte ao Ubuntu e execute:
+
+docker version
+docker ps
+
+Esses comandos nao devem mostrar "command not found" nem erro de
+conexao com o Docker.
+
+Se aparecer "docker: command not found", habilite novamente a integracao
+WSL no Docker Desktop.
+
+Se aparecer erro de conexao com o daemon, confirme que o Docker Desktop
+esta aberto e totalmente inicializado.
+
+
+9. VALIDAR OS SCRIPTS
+============================================================
+
+No Ubuntu, dentro do projeto, execute:
+
+bash -n bin/ajr-fastlio2-lvx.sh
+bash -n fastlio2/scripts/build_fastlio2_docker.sh
+bash -n fastlio2/scripts/run_fastlio2_docker.sh
+bash -n fastlio2/scripts/run_fastlio2_session.sh
+bash -n fastlio2/scripts/run_pcd_to_las.sh
+
+Se nenhum texto for exibido, a sintaxe esta correta.
+
+Teste o launcher:
+
+bash bin/ajr-fastlio2-lvx.sh --help
+
+Ele deve mostrar as instrucoes de uso sem apresentar erro.
+
+
+10. CONSTRUIR A IMAGEM FAST-LIO2
+============================================================
+
+No Ubuntu, execute:
+
+bash fastlio2/scripts/build_fastlio2_docker.sh
+
+Depois confirme que a imagem existe:
+
+docker image inspect ajr-fastlio2:noetic
+
+Esse processo pode demorar na primeira execucao.
+
+
+11. TESTAR O LAUNCHER PELO WINDOWS
+============================================================
+
+Volte ao PowerShell, dentro da pasta do projeto:
+
+cd C:\Users\lucio\Downloads\ajr_lidar
+
+Teste a ajuda do launcher:
+
+bin\ajr-fastlio2-lvx.bat --help
+
+Depois teste as dependencias:
+
+wsl bash -lc "cd /mnt/c/Users/lucio/Downloads/ajr_lidar && command -v python3 && command -v docker && .venv-wsl/bin/python --version && docker version"
+
+Todos os comandos devem ser encontrados.
+
+
+12. ABRIR E TESTAR O APLICATIVO
+============================================================
+
+Abra novamente o aplicativo AJR LiDAR no Windows.
+
+Selecione uma pasta de voo que contenha diretamente um arquivo .lvx
+valido e nao vazio.
+
+Deixe marcada a opcao:
+
+Usar FAST-LIO2 Docker e gerar *_map.las
+
+Clique em:
+
+Executar Pipeline
+
+No log, o comando montado deve comecar com:
+
+cmd.exe /d /c
+
+O processamento correto deve terminar com:
+
+Codigo da saida: 0
+
+
+13. SE O CODIGO 127 CONTINUAR
+============================================================
+
+No PowerShell, execute e guarde toda a saida:
+
+wsl bash -lc "cd /mnt/c/Users/lucio/Downloads/ajr_lidar && command -v bash; command -v python3; command -v docker; ls -l .venv-wsl/bin/python; docker version"
+
+Depois execute o launcher manualmente, substituindo o caminho do LVX:
+
+bin\ajr-fastlio2-lvx.bat "C:\CAMINHO\DO\VOO\arquivo.lvx"
+
+Observe a mensagem imediatamente anterior ao codigo 127. Ela indicara
+qual comando nao foi encontrado.
+
+
+RESUMO DOS RESULTADOS ESPERADOS
+============================================================
+
+- wsl --list --verbose mostra Ubuntu usando WSL 2;
+- python3 --version funciona dentro do Ubuntu;
+- .venv-wsl/bin/python --version funciona;
+- docker version funciona dentro do Ubuntu;
+- docker image inspect ajr-fastlio2:noetic encontra a imagem;
+- bin\ajr-fastlio2-lvx.bat --help funciona no Windows;
+- o aplicativo monta um comando iniciado por cmd.exe /d /c;
+- o processamento termina com Codigo da saida: 0.
