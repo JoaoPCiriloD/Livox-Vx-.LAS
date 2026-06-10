@@ -20,6 +20,8 @@ if [[ $# -lt 1 || "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 fi
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+VENV_DIR="${ROOT_DIR}/.venv-wsl"
+PYTHON_BIN="${VENV_DIR}/bin/python"
 LVX="$(realpath "$1")"
 OUT_DIR="${2:-${ROOT_DIR}/fastlio2_output/$(basename "${LVX}" .lvx)}"
 OUT_DIR="$(realpath -m "${OUT_DIR}")"
@@ -29,13 +31,29 @@ if [[ ! -f "${LVX}" ]]; then
   exit 1
 fi
 
-if [[ ! -x "${ROOT_DIR}/.venv/bin/python" ]]; then
-  echo "==> Criando ambiente Python local"
-  python3 -m venv "${ROOT_DIR}/.venv"
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "ERRO: python3 nao encontrado no Linux/WSL." >&2
+  echo "Instale com: sudo apt update && sudo apt install -y python3 python3-venv python3-pip" >&2
+  exit 127
+fi
+
+if ! command -v docker >/dev/null 2>&1; then
+  echo "ERRO: docker nao encontrado no Linux/WSL." >&2
+  echo "No Windows, abra o Docker Desktop e habilite a integracao WSL para a distribuicao Ubuntu." >&2
+  exit 127
+fi
+
+if [[ ! -x "${PYTHON_BIN}" ]]; then
+  echo "==> Criando ambiente Python Linux/WSL em .venv-wsl"
+  if ! python3 -m venv "${VENV_DIR}"; then
+    echo "ERRO: nao foi possivel criar .venv-wsl." >&2
+    echo "No Ubuntu, instale: sudo apt install -y python3-venv python3-pip" >&2
+    exit 1
+  fi
 fi
 
 echo "==> Instalando/validando dependencias Python"
-"${ROOT_DIR}/.venv/bin/python" -m pip install -r "${ROOT_DIR}/requirements.txt"
+"${PYTHON_BIN}" -m pip install -r "${ROOT_DIR}/requirements.txt"
 
 if ! docker image inspect ajr-fastlio2:noetic >/dev/null 2>&1; then
   echo "==> Imagem Docker ajr-fastlio2:noetic nao encontrada; construindo"

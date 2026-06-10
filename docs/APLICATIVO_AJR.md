@@ -10,17 +10,17 @@ A partir da raiz do projeto:
 
 ```bash
 cd /home/joaop/Downloads/ajr_lidar
-source .venv/bin/activate
-.venv/bin/python ajr_app/manage.py
+source .venv-wsl/bin/activate
+.venv-wsl/bin/python ajr_app/manage.py
 ```
 
 Se estiver dentro da pasta `ajr_app`, use:
 
 ```bash
-../.venv/bin/python manage.py
+../.venv-wsl/bin/python manage.py
 ```
 
-Se `python manage.py` mostrar `ModuleNotFoundError: No module named 'PySide6'`, o shell nao esta usando o Python da `.venv`. Confira com:
+Se `python manage.py` mostrar `ModuleNotFoundError: No module named 'PySide6'`, o shell nao esta usando o Python da `.venv-wsl`. Confira com:
 
 ```bash
 which python
@@ -30,14 +30,14 @@ python -c "import sys; print(sys.executable)"
 O caminho correto deve ser:
 
 ```text
-/home/joaop/Downloads/ajr_lidar/.venv/bin/python
+/home/joaop/Downloads/ajr_lidar/.venv-wsl/bin/python
 ```
 
 ## Dependencias do app
 
 ```bash
 cd /home/joaop/Downloads/ajr_lidar
-source .venv/bin/activate
+source .venv-wsl/bin/activate
 python -m pip install -r requirements.txt
 python -m pip install PySide6 pyinstaller
 ```
@@ -162,7 +162,7 @@ acompanhamento e diagnóstico.
 Verifique o ambiente antes de abrir o app:
 
 ```bash
-.venv/bin/python -c "import PySide6; print('PySide6 OK')"
+.venv-wsl/bin/python -c "import PySide6; print('PySide6 OK')"
 docker ps
 command -v cloudcompare || flatpak info org.cloudcompare.CloudCompare
 ```

@@ -51,8 +51,8 @@ Abra o app pela raiz do projeto:
 
 ```bash
 cd /home/joaop/Downloads/ajr_lidar
-source .venv/bin/activate
-.venv/bin/python ajr_app/manage.py
+source .venv-wsl/bin/activate
+.venv-wsl/bin/python ajr_app/manage.py
 ```
 
 No app, selecione uma pasta de voo com `.lvx` valido e mantenha marcada a opcao `Usar FAST-LIO2 Docker e gerar *_map.las`. A saida principal esperada e:
@@ -80,7 +80,7 @@ bin/ajr-fastlio2-lvx.sh /caminho/arquivo.lvx fastlio2_output/minha_sessao
 
 Ele executa:
 
-1. cria/usa `.venv`;
+1. cria/usa `.venv-wsl` no Linux/WSL;
 2. instala dependencias Python de `requirements.txt`;
 3. constroi a imagem Docker `ajr-fastlio2:noetic` se ela ainda nao existir;
 4. converte `.lvx` para `rosbag`;
@@ -100,8 +100,9 @@ No Linux, o caminho recomendado é Docker, pois o FAST-LIO2 usa ROS Noetic.
 
 ```bash
 cd /home/joaop/Downloads/ajr_lidar
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+python3 -m venv .venv-wsl
+.venv-wsl/bin/python -m pip install --upgrade pip
+.venv-wsl/bin/python -m pip install -r requirements.txt
 bash fastlio2/scripts/build_fastlio2_docker.sh
 ```
 
@@ -160,14 +161,65 @@ O FAST-LIO2 no Windows utiliza Docker Desktop com WSL2. O caminho recomendado do
 C:\Users\SEU_USUARIO\Downloads\ajr_lidar
 ```
 
-Prepare e abra a interface pelo PowerShell:
+Use sempre ambientes separados:
+
+```text
+.venv-windows -> interface PySide6 executada pelo Windows
+.venv-wsl     -> scripts Python executados pelo Ubuntu/WSL
+Docker        -> ROS Noetic, Livox ROS Driver e FAST-LIO2
+```
+
+Não crie nem reutilize uma pasta chamada `.venv`. Ela pode misturar executáveis
+Windows e Linux. O padrão deste projeto é somente `.venv-windows` e
+`.venv-wsl`.
+
+Instale no Windows:
+
+- Python 3.10 ou superior;
+- WSL2 com Ubuntu;
+- Docker Desktop usando o mecanismo WSL2;
+- CloudCompare.
+
+Confirme no PowerShell:
+
+```powershell
+wsl --list --verbose
+wsl docker version
+wsl docker ps
+```
+
+O Ubuntu deve aparecer como versão `2`. Se `docker` não for encontrado dentro
+do WSL, abra o Docker Desktop e habilite:
+
+```text
+Settings > General > Use the WSL 2 based engine
+Settings > Resources > WSL Integration > Ubuntu
+```
+
+Prepare a interface pelo PowerShell:
 
 ```powershell
 cd "$env:USERPROFILE\Downloads\ajr_lidar"
 py -3 -m venv .venv-windows
+.\.venv-windows\Scripts\python.exe -m pip install --upgrade pip
 .\.venv-windows\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv-windows\Scripts\python.exe -m pip install PySide6
+.\.venv-windows\Scripts\python.exe -m pip install PySide6 pyinstaller
 .\.venv-windows\Scripts\python.exe .\ajr_app\manage.py
+```
+
+Prepare o ambiente auxiliar no Ubuntu/WSL:
+
+```bash
+cd /mnt/c/Users/SEU_USUARIO/Downloads/ajr_lidar
+sudo apt update
+sudo apt install -y python3 python3-venv python3-pip
+python3 -m venv .venv-wsl
+.venv-wsl/bin/python -m pip install --upgrade pip
+.venv-wsl/bin/python -m pip install -r requirements.txt
+sed -i 's/\r$//' fastlio2/scripts/*.sh bin/*.sh
+bash -n bin/ajr-fastlio2-lvx.sh
+bash -n fastlio2/scripts/run_fastlio2_session.sh
+bash fastlio2/scripts/build_fastlio2_docker.sh
 ```
 
 O aplicativo chama automaticamente o wrapper `.bat`. Para testar o wrapper
@@ -179,6 +231,16 @@ cd "$env:USERPROFILE\Downloads\ajr_lidar"
   "C:\Users\SEU_USUARIO\Downloads\voo\lidar.lvx" `
   "C:\Users\SEU_USUARIO\Downloads\resultado_lidar\meu_voo"
 ```
+
+O código de saída `127` significa que algum comando não foi encontrado. Execute:
+
+```powershell
+wsl bash -lc "command -v bash; command -v python3; command -v docker"
+wsl bash -lc "docker version"
+```
+
+Os três comandos precisam retornar caminhos. O wrapper também informa
+explicitamente quando `python3`, `docker` ou `.venv-wsl` não estão disponíveis.
 
 O guia completo de ambientes, integração, conversão de caminhos, logs,
 salvamento e erros conhecidos está em `docs/GUIA_WINDOWS.md`.
@@ -199,8 +261,9 @@ cd ajr_lidar
 4. Prepare dependências Python:
 
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+python3 -m venv .venv-wsl
+.venv-wsl/bin/python -m pip install --upgrade pip
+.venv-wsl/bin/python -m pip install -r requirements.txt
 ```
 
 5. Execute o fluxo completo:
@@ -241,7 +304,8 @@ Este repositório não deve versionar dados brutos ou resultados pesados:
 - `.las`
 - `fastlio2_output/`
 - `sessoes/`
-- `.venv/`
+- `.venv-windows/`
+- `.venv-wsl/`
 
 Esses arquivos são ignorados pelo `.gitignore`.
 

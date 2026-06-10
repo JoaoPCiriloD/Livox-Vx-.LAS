@@ -28,8 +28,14 @@ Os ambientes têm funções diferentes:
 Docker        -> ROS Noetic, Livox ROS Driver e FAST-LIO2
 ```
 
-Não reutilize uma mesma `.venv` entre Windows e WSL. Um ambiente Linux contém
-`bin/python`; um ambiente Windows contém `Scripts\python.exe`.
+Não crie nem reutilize uma pasta genérica chamada `.venv`. Um ambiente Linux
+contém `bin/python`; um ambiente Windows contém `Scripts\python.exe`. O padrão
+único deste projeto no Windows é:
+
+```text
+.venv-windows -> Windows
+.venv-wsl     -> Ubuntu/WSL
+```
 
 ## 2. Estrutura esperada
 
@@ -125,6 +131,9 @@ python3 -m venv .venv-wsl
 ```
 
 O wrapper Linux deve usar `.venv-wsl/bin/python`, não o ambiente do Windows.
+Ele cria `.venv-wsl` automaticamente quando `python3` e `python3-venv` estão
+disponíveis, mas recomenda-se preparar o ambiente explicitamente durante a
+instalação.
 
 ## 6. Construir a imagem Docker
 
@@ -156,6 +165,19 @@ bash -n fastlio2/scripts/run_fastlio2_session.sh
 ```
 
 Nenhuma saída significa sintaxe válida.
+
+Valide também os comandos que o wrapper precisa encontrar:
+
+```bash
+command -v bash
+command -v python3
+command -v docker
+docker version
+```
+
+Se `docker` não retornar um caminho, o Docker Desktop não está integrado à
+distribuição Ubuntu. Se `python3` não retornar um caminho, instale os pacotes da
+seção 5.
 
 ## 7. Integração da interface com Windows
 
@@ -384,6 +406,8 @@ Get-ChildItem "C:\Users\joaop\Livox-Vx-.LAS" `
 | Sintoma ou mensagem | Causa provável | Ação |
 |---|---|---|
 | `did not find executable at '/usr/bin\python.exe'` | `.venv` Linux usada no Windows | Execute `.venv-windows\Scripts\python.exe` |
+| Código de saída `127` | `python3`, `docker` ou outro comando não foi encontrado no WSL | Execute `command -v python3` e `command -v docker` dentro do Ubuntu |
+| `.venv-wsl/bin/python: No such file or directory` | Ambiente WSL ausente ou incompleto | Recrie `.venv-wsl` conforme a seção 5 |
 | `No module named PySide6` | PySide6 ausente no ambiente Windows | Instale com o Python de `.venv-windows` |
 | `/bin/bash: C:\... No such file or directory` | App Windows chamou o `.sh` | Use `cmd.exe /d /c` e o wrapper `.bat` |
 | `wsl` não é reconhecido | WSL ausente | Instale WSL2 e Ubuntu |
@@ -426,6 +450,7 @@ Ordem recomendada de diagnóstico:
 wsl --list --verbose
 wsl docker ps
 .\.venv-windows\Scripts\python.exe -c "import PySide6; print('PySide6 OK')"
+wsl bash -lc "cd /mnt/c/Users/joaop/Livox-Vx-.LAS && .venv-wsl/bin/python --version && command -v docker"
 wsl bash -n "/mnt/c/Users/joaop/Livox-Vx-.LAS/fastlio2/scripts/run_fastlio2_session.sh"
 ```
 

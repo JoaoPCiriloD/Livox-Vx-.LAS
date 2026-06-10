@@ -191,7 +191,7 @@ Antes de copiar, verifica:
 Comandos de diagnóstico:
 
 ```bash
-.venv/bin/python -c "import PySide6; print('PySide6 OK')"
+.venv-wsl/bin/python -c "import PySide6; print('PySide6 OK')"
 docker ps
 command -v cloudcompare || flatpak info org.cloudcompare.CloudCompare
 ```

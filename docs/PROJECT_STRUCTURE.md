@@ -65,7 +65,7 @@
 ## Pontos de Entrada
 
 ```bash
-.venv/bin/python ajr_app/manage.py
+.venv-wsl/bin/python ajr_app/manage.py
 bin/ajr-fastlio2-lvx.sh arquivo.lvx fastlio2_output/sessao
 python scripts/pipeline/ajr_pipeline.py pasta_da_sessao
 python scripts/pipeline/ajr_compare.py --all
