@@ -404,7 +404,7 @@ class MainWindow(QMainWindow):
         else:
             self.status_label.setText("Status: Finalizado com erro")
             self.set_running_state(False)
-
+ 
     def process_error(self, error):
         self.log("")
         self.log(f"Erro ao executar processo: {error}")

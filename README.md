@@ -184,12 +184,17 @@ Confirme no PowerShell:
 
 ```powershell
 wsl --list --verbose
+wsl --set-default Ubuntu
+wsl --list --verbose
 wsl docker version
 wsl docker ps
 ```
 
-O Ubuntu deve aparecer como versão `2`. Se `docker` não for encontrado dentro
-do WSL, abra o Docker Desktop e habilite:
+Use `wsl --set-default Ubuntu` quando o Ubuntu não estiver marcado com `*` na
+lista. Se a distribuição possuir outro nome, como `Ubuntu-22.04`, use o nome
+exato exibido. O Ubuntu deve aparecer como versão `2`.
+
+Se `docker` não for encontrado dentro do WSL, abra o Docker Desktop e habilite:
 
 ```text
 Settings > General > Use the WSL 2 based engine
@@ -244,6 +249,21 @@ explicitamente quando `python3`, `docker` ou `.venv-wsl` não estão disponívei
 
 O guia completo de ambientes, integração, conversão de caminhos, logs,
 salvamento e erros conhecidos está em `docs/GUIA_WINDOWS.md`.
+
+## Visualização no CloudCompare
+
+Abra o arquivo `*_fastlio2_map.las` e siga esta sequência:
+
+1. Selecione a nuvem na **DB Tree**.
+2. Em **Properties**, selecione o campo escalar, normalmente **Intensity**.
+3. Clique em **Open Color Scales Manager dialog**.
+4. Aplique a escala **Blue > Green > Yellow > Red**.
+5. Ajuste a faixa exibida em **Properties** para controlar a coloração.
+6. Para filtrar pontos, use **Edit > Scalar fields > Filter by Value**.
+7. Ative **Display > Shaders > EDL Shaders**.
+
+O procedimento detalhado e os caminhos completos estão em
+`docs/MANUAL_APLICATIVO.md` e `docs/GUIA_WINDOWS.md`.
 
 ## macOS
 

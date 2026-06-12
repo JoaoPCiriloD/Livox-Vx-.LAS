@@ -25,7 +25,6 @@ PYTHON_BIN="${VENV_DIR}/bin/python"
 LVX="$(realpath "$1")"
 OUT_DIR="${2:-${ROOT_DIR}/fastlio2_output/$(basename "${LVX}" .lvx)}"
 OUT_DIR="$(realpath -m "${OUT_DIR}")"
-VENV_DIR="${ROOT_DIR}/.venv-wsl"
 
 if [[ ! -f "${LVX}" ]]; then
   echo "LVX nao encontrado: ${LVX}" >&2
@@ -33,18 +32,12 @@ if [[ ! -f "${LVX}" ]]; then
 fi
 
 if ! command -v python3 >/dev/null 2>&1; then
-<<<<<<< HEAD
   echo "ERRO: python3 nao encontrado no Linux/WSL." >&2
   echo "Instale com: sudo apt update && sudo apt install -y python3 python3-venv python3-pip" >&2
-=======
-  echo "ERRO: python3 nao encontrado no WSL." >&2
-  echo "Instale com: sudo apt install -y python3 python3-venv python3-pip" >&2
->>>>>>> bb20a2e (Ajuste documentacao)
   exit 127
 fi
 
 if ! command -v docker >/dev/null 2>&1; then
-<<<<<<< HEAD
   echo "ERRO: docker nao encontrado no Linux/WSL." >&2
   echo "No Windows, abra o Docker Desktop e habilite a integracao WSL para a distribuicao Ubuntu." >&2
   exit 127
@@ -55,28 +48,12 @@ if [[ ! -x "${PYTHON_BIN}" ]]; then
   if ! python3 -m venv "${VENV_DIR}"; then
     echo "ERRO: nao foi possivel criar .venv-wsl." >&2
     echo "No Ubuntu, instale: sudo apt install -y python3-venv python3-pip" >&2
-=======
-  echo "ERRO: docker nao encontrado no WSL." >&2
-  echo "Inicie o Docker Desktop e habilite a integracao com esta distribuicao WSL." >&2
-  exit 127
-fi
-
-if [[ ! -x "${VENV_DIR}/bin/python" ]]; then
-  echo "==> Criando ambiente Python auxiliar do WSL"
-  if ! python3 -m venv "${VENV_DIR}"; then
-    echo "ERRO: nao foi possivel criar ${VENV_DIR}." >&2
-    echo "Instale com: sudo apt install -y python3-venv" >&2
->>>>>>> bb20a2e (Ajuste documentacao)
     exit 1
   fi
 fi
 
 echo "==> Instalando/validando dependencias Python"
-<<<<<<< HEAD
 "${PYTHON_BIN}" -m pip install -r "${ROOT_DIR}/requirements.txt"
-=======
-"${VENV_DIR}/bin/python" -m pip install -r "${ROOT_DIR}/requirements.txt"
->>>>>>> bb20a2e (Ajuste documentacao)
 
 if ! docker image inspect ajr-fastlio2:noetic >/dev/null 2>&1; then
   echo "==> Imagem Docker ajr-fastlio2:noetic nao encontrada; construindo"

@@ -74,7 +74,32 @@ wsl --status
 wsl --list --verbose
 ```
 
-O Ubuntu deve aparecer com versão `2`.
+O Ubuntu deve aparecer com versão `2`. Confira também qual distribuição está
+marcada como padrão pelo asterisco (`*`) na saída de `wsl --list --verbose`.
+
+Se o Ubuntu não for a distribuição padrão, execute:
+
+```powershell
+wsl --set-default Ubuntu
+```
+
+O nome precisa ser exatamente o mesmo exibido por `wsl --list --verbose`. Por
+exemplo, se a distribuição estiver listada como `Ubuntu-22.04`, use:
+
+```powershell
+wsl --set-default Ubuntu-22.04
+```
+
+Confirme a alteração:
+
+```powershell
+wsl --list --verbose
+wsl -e bash -lc "cat /etc/os-release | head"
+```
+
+O asterisco deve aparecer ao lado do Ubuntu. O comando correto possui dois
+hífens: `wsl --set-default Ubuntu`. A forma `wsl -set-default Ubuntu` não deve
+ser usada.
 
 Confirme o Docker:
 
@@ -306,6 +331,9 @@ Na interface:
 6. Aguarde a conclusão.
 7. Escolha uma pasta do Windows quando a janela de salvamento abrir.
 
+Depois que o LAS for aberto no CloudCompare, siga a sequência da seção 14 para
+configurar a coloração, o filtro de coloração e o shader EDL.
+
 O seletor mostra pastas, não arquivos. É normal que `.lvx` e `.ubx` não sejam
 exibidos nessa janela.
 
@@ -401,7 +429,80 @@ Get-ChildItem "C:\Users\joaop\Livox-Vx-.LAS" `
     -Recurse -Filter "*_fastlio2_map.las"
 ```
 
-## 14. Diagnóstico de erros
+## 14. Configurar a visualização no CloudCompare
+
+Use o arquivo `*_fastlio2_map.las` gerado pelo aplicativo.
+
+### 14.1. Selecionar a nuvem e o campo escalar
+
+1. Na árvore **DB Tree**, selecione o arquivo ou a nuvem de pontos.
+2. No painel **Properties**, localize a seção de campo escalar.
+3. Selecione o campo que será usado na visualização, normalmente
+   **Intensity**, quando estiver disponível.
+4. Ative a exibição do campo escalar, caso a nuvem ainda esteja sendo exibida
+   com uma cor única.
+
+### 14.2. Aplicar a escala de cores
+
+Com a nuvem selecionada:
+
+1. No painel **Properties**, localize a propriedade da escala de cores.
+2. Clique em **Open Color Scales Manager dialog**.
+3. Selecione ou crie a escala na sequência:
+   **Blue > Green > Yellow > Red**.
+4. Aplique a escala ao campo escalar ativo e feche a janela.
+
+Essa sequência representa os valores menores em azul e os maiores em
+vermelho, passando por verde e amarelo.
+
+### 14.3. Ajustar o filtro de coloração
+
+Para limitar a faixa de valores usada na coloração:
+
+1. Mantenha a nuvem selecionada.
+2. No painel **Properties**, ajuste os limites da faixa exibida do campo
+   escalar ativo até destacar a região de interesse.
+3. Para remover pontos fora da faixa, em vez de apenas alterar sua aparência,
+   use **Edit > Scalar fields > Filter by Value**.
+4. Informe os valores mínimo e máximo e confirme a criação da nuvem filtrada.
+
+O ajuste em **Properties** muda a visualização. **Filter by Value** cria um
+resultado filtrado com base nos valores do campo escalar.
+
+### 14.4. Ativar o shader EDL
+
+Com a nuvem visível, acesse:
+
+```text
+Display > Shaders > EDL Shaders
+```
+
+O EDL aumenta a percepção de profundidade e facilita a leitura do relevo e
+das estruturas da nuvem. Se a opção estiver indisponível, confirme que uma
+nuvem de pontos está selecionada e que a aceleração gráfica do computador
+está ativa.
+
+### 14.5. Sequência operacional completa
+
+```text
+PowerShell
+-> wsl --list --verbose
+-> wsl --set-default Ubuntu, se necessário
+-> abrir o AJR LiDAR
+-> selecionar a pasta que contém o LVX
+-> executar o FAST-LIO2
+-> salvar *_fastlio2_map.las
+-> abrir o LAS no CloudCompare
+-> selecionar a nuvem na DB Tree
+-> Properties
+-> Open Color Scales Manager dialog
+-> Blue > Green > Yellow > Red
+-> ajustar a faixa do campo escalar
+-> Edit > Scalar fields > Filter by Value, se necessário
+-> Display > Shaders > EDL Shaders
+```
+
+## 15. Diagnóstico de erros
 
 | Sintoma ou mensagem | Causa provável | Ação |
 |---|---|---|
@@ -425,7 +526,7 @@ Get-ChildItem "C:\Users\joaop\Livox-Vx-.LAS" `
 | LVX vazio ou inválido | Arquivo com zero bytes | Use uma captura válida |
 | Disco cheio | Rosbag, PCD e LAS consomem muito espaço | Libere espaço e remova saídas parciais |
 
-## 15. Logs importantes
+## 16. Logs importantes
 
 ```text
 logs\lvx_to_rosbag.log
@@ -444,10 +545,11 @@ Ordem recomendada de diagnóstico:
 4. `fastlio2.log`;
 5. `rosbag_play.log`.
 
-## 16. Teste mínimo
+## 17. Teste mínimo
 
 ```powershell
 wsl --list --verbose
+wsl -e bash -lc "cat /etc/os-release | head"
 wsl docker ps
 .\.venv-windows\Scripts\python.exe -c "import PySide6; print('PySide6 OK')"
 wsl bash -lc "cd /mnt/c/Users/joaop/Livox-Vx-.LAS && .venv-wsl/bin/python --version && command -v docker"

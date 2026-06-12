@@ -109,6 +109,21 @@ Status: Erro ao salvar
 
 ## 3. Como processar uma sessão com FAST-LIO2
 
+No Windows, primeiro abra o PowerShell e confirme que o Ubuntu é a
+distribuição padrão do WSL:
+
+```powershell
+wsl --list --verbose
+wsl --set-default Ubuntu
+wsl --list --verbose
+```
+
+O segundo comando só é necessário se o Ubuntu ainda não estiver marcado com
+um asterisco (`*`). Se a lista mostrar outro nome, como `Ubuntu-22.04`, use
+esse nome exato. A sintaxe correta é `wsl --set-default`, com dois hífens.
+
+Depois:
+
 1. Abra o aplicativo.
 2. Clique em **Selecionar**.
 3. Escolha uma pasta que contenha um LVX válido.
@@ -118,6 +133,7 @@ Status: Erro ao salvar
 7. Após o sucesso, escolha uma pasta externa para salvar os resultados.
 8. Aguarde o status **Resultados salvos**.
 9. O aplicativo tentará abrir o LAS no CloudCompare.
+10. Configure a visualização conforme a seção 5.
 
 ## 4. Pastas e resultados
 
@@ -159,6 +175,40 @@ No modo FAST-LIO2, o arquivo correto para visualização é:
 
 ```text
 *_fastlio2_map.las
+```
+
+### Sequência de configuração da nuvem
+
+1. Na **DB Tree**, selecione a nuvem aberta.
+2. Em **Properties**, selecione o campo escalar desejado, normalmente
+   **Intensity**, quando disponível.
+3. Na propriedade da escala de cores, clique em
+   **Open Color Scales Manager dialog**.
+4. Selecione ou crie a escala **Blue > Green > Yellow > Red**.
+5. Aplique a escala ao campo escalar ativo.
+6. Ajuste em **Properties** os limites da faixa exibida para controlar o
+   filtro de coloração.
+7. Quando for necessário remover os pontos fora da faixa, use
+   **Edit > Scalar fields > Filter by Value** e informe os limites mínimo e
+   máximo.
+8. Ative o realce de profundidade em
+   **Display > Shaders > EDL Shaders**.
+
+O ajuste dos limites em **Properties** altera apenas a apresentação das cores.
+O comando **Filter by Value** cria uma nuvem filtrada pelos valores do campo
+escalar.
+
+Fluxo resumido:
+
+```text
+DB Tree
+-> selecionar a nuvem
+-> Properties
+-> Open Color Scales Manager dialog
+-> Blue > Green > Yellow > Red
+-> ajustar a faixa do campo escalar
+-> Edit > Scalar fields > Filter by Value, se necessário
+-> Display > Shaders > EDL Shaders
 ```
 
 ## 6. Validações automáticas
@@ -210,6 +260,15 @@ Use ambientes separados:
 ```text
 .venv-windows -> interface PySide6
 .venv-wsl     -> scripts Python no Ubuntu/WSL
+```
+
+Antes de abrir o aplicativo, confira e, se necessário, defina o Ubuntu como
+distribuição padrão:
+
+```powershell
+wsl --list --verbose
+wsl --set-default Ubuntu
+wsl -e bash -lc "cat /etc/os-release | head"
 ```
 
 Consulte `docs/GUIA_WINDOWS.md` para o passo a passo completo, incluindo os caminhos `C:\Users\...` e `/mnt/c/Users/...`.
